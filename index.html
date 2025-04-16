@@ -798,6 +798,37 @@
         loadFavorites(); // Load favorites first
         loadAndDisplayData();
         setupEventListeners();
+
+        // --- Theme Switching Logic --- 
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('therapistFinderTheme', theme);
+
+            // Update active class on picker
+            const squares = themePicker.querySelectorAll('.theme-square');
+            squares.forEach(square => {
+                if (square.dataset.setTheme === theme) {
+                    square.classList.add('active');
+                } else {
+                    square.classList.remove('active');
+                }
+            });
+        }
+
+        themePicker.addEventListener('click', (event) => {
+            if (event.target.classList.contains('theme-square')) {
+                const theme = event.target.dataset.setTheme;
+                if (theme) {
+                    applyTheme(theme);
+                }
+            }
+        });
+
+        // Load saved theme on startup
+        const savedTheme = localStorage.getItem('therapistFinderTheme') || 'bloomberg'; // Default to bloomberg
+        applyTheme(savedTheme);
+        // --- End Theme Switching Logic ---
+
     </script>
 
 </body>
