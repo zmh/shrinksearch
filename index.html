@@ -102,7 +102,7 @@
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--label-color); /* Highlight on hover */
+             transform: scale(1.1);
         }
 
         .controls {
@@ -635,49 +635,22 @@
                 const favTd = document.createElement('td');
                 const starSpan = document.createElement('span');
                 starSpan.className = 'favorite-star';
-                starSpan.innerHTML = isFavorite(index) ? '★' : '☆';
+                starSpan.innerHTML = isFavorite(item.originalIndex) ? '★' : '☆'; // Use originalIndex
                 starSpan.title = 'Toggle Favorite';
                 starSpan.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent row hover/click if needed
-                    toggleFavorite(index);
-                    // Update this specific star immediately
-                    starSpan.innerHTML = isFavorite(index) ? '★' : '☆';
-                    starSpan.classList.toggle('is-favorite', isFavorite(index));
+                    toggleFavorite(item.originalIndex); // Use originalIndex
+                    // The toggleFavorite function already updates the UI, no need to do it here explicitly
                 });
-                if(isFavorite(index)) starSpan.classList.add('is-favorite');
+                if(isFavorite(item.originalIndex)) starSpan.classList.add('is-favorite'); // Use originalIndex
                 favTd.appendChild(starSpan);
                 rowTr.appendChild(favTd); // Add to the beginning
 
                 headers.forEach(header => {
                     const td = document.createElement('td');
                     const value = item[header] !== undefined ? item[header] : '';
-                    // Check if the current cell is for the 'Name' column to add star
-                    if (header === 'name') {
-                        // Create star span
-                        const starSpan = document.createElement('span');
-                        starSpan.classList.add('star');
-                        const isFav = isFavorite(item.originalIndex);
-                        starSpan.innerHTML = isFav ? '★' : '☆'; 
-                        starSpan.classList.toggle('is-favorite', isFav);
-                        starSpan.onclick = (e) => { 
-                            e.stopPropagation(); // Prevent row hover/click handlers
-                            toggleFavorite(item.originalIndex);
-                        };
-                        td.appendChild(starSpan);
-                        td.appendChild(document.createTextNode('\u00A0')); // Add space
-
-                        // Add name text
-                        const textSpan = document.createElement('span');
-                        textSpan.innerHTML = highlightText(value, currentSearchTerm);
-                        td.appendChild(textSpan);
-                    } else {
-                        // --- Clean the value before displaying and highlighting ---
-                        const cleanedValue = cleanDisplayValue(header, value); // <-- USE HELPER
-                        td.innerHTML = highlightText(cleanedValue, currentSearchTerm); // <-- USE CLEANED VALUE
-                        // --- End cleaning modification ---
-                    }
-
-                    // Apply compact styling
+                    // Set cell content, applying highlighting
+                    td.innerHTML = highlightText(String(value), searchInput.value);
                     rowTr.appendChild(td);
                 });
                 tbody.appendChild(rowTr);
