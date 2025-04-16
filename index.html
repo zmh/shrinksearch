@@ -22,6 +22,8 @@
             --hover-bg-color: #2a2a2a;
             --scrollbar-bg: #1a1a1a;
             --scrollbar-thumb: #555;
+            --highlight-bg-color: #FFFF00; /* Yellow background */
+            --highlight-text-color: #000000; /* Black text */
         }
 
         body[data-theme="solarized-dark"] {
@@ -39,6 +41,8 @@
             --hover-bg-color: #073642;
             --scrollbar-bg: #073642;
             --scrollbar-thumb: #586e75;
+            --highlight-bg-color: #b58900; /* Solarized Yellow background */
+            --highlight-text-color: #002b36; /* Solarized Base background for text */
         }
 
         body[data-theme="solarized-light"] {
@@ -56,6 +60,8 @@
             --hover-bg-color: #eee8d5;
             --scrollbar-bg: #eee8d5;
             --scrollbar-thumb: #93a1a1;
+            --highlight-bg-color: #b58900; /* Solarized Yellow background */
+            --highlight-text-color: #fdf6e3; /* Solarized Base background for text */
         }
         /* --- End Theme Variables --- */
 
@@ -212,6 +218,14 @@
            color: var(--link-color);
         }
 
+        /* Highlight Style */
+        .search-highlight {
+            background-color: var(--highlight-bg-color);
+            color: var(--highlight-text-color);
+            padding: 0 2px; /* Small padding */
+            border-radius: 2px;
+        }
+
         /* Theme Picker Styles */
         #themePicker {
             position: absolute;
@@ -320,6 +334,10 @@
 
         let allData = [];
         let headers = [];
+        let currentSort = { column: null, direction: 'asc' };
+        let currentHighlightedRow = null;
+        let searchDebounceTimeout = null;
+        let currentSearchTerm = ''; // Store the current search term
 
         // Debounce function
         function debounce(func, delay) {
@@ -385,8 +403,21 @@
             previewContentDiv.innerHTML = ''; // Clear previous
         }
 
+        // Function to highlight search term in text
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || !text) {
+                return text; // Return original text if no search term or text
+            }
+            // Escape special regex characters in the search term
+            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedSearchTerm, 'gi'); // Case-insensitive, global
+            // Ensure text is treated as a string
+            const textString = String(text);
+            return textString.replace(regex, match => `<span class="search-highlight">${match}</span>`);
+        }
+
         function updatePreview(originalIndex) {
-            if (originalIndex < 0 || originalIndex >= allData.length) {
+            if (originalIndex === null || originalIndex < 0 || originalIndex >= allData.length) {
                 clearPreview();
                 return;
             }
@@ -397,25 +428,24 @@
             // Name
             if (therapist.name) {
                 const nameH3 = document.createElement('h3');
-                nameH3.textContent = therapist.name;
+                nameH3.innerHTML = highlightText(therapist.name, currentSearchTerm);
                 previewContentDiv.appendChild(nameH3);
             }
 
             // Degrees
             if (therapist.degrees) {
-                const degreesP = document.createElement('p');
-                degreesP.className = 'preview-degrees';
-                degreesP.textContent = therapist.degrees;
-                previewContentDiv.appendChild(degreesP);
+                 const degreesP = document.createElement('p');
+                 degreesP.className = 'preview-degrees';
+                 degreesP.innerHTML = highlightText(therapist.degrees, currentSearchTerm);
+                 previewContentDiv.appendChild(degreesP);
             }
 
             // Formatted Short Description Text
             if (therapist.all_short_descriptions_text) {
                 const descP = document.createElement('p');
                 descP.className = 'preview-short-desc';
-                // Replace double spaces with <br> for line breaks in HTML
                 const formattedDesc = therapist.all_short_descriptions_text.replace(/  +/g, '<br>');
-                descP.innerHTML = formattedDesc; // Use innerHTML to render breaks
+                descP.innerHTML = highlightText(formattedDesc, currentSearchTerm);
                 previewContentDiv.appendChild(descP);
             }
             // --- End Header --- 
@@ -432,31 +462,16 @@
                     const fieldBlock = document.createElement('div');
                     fieldBlock.className = 'field-block';
 
-                    const keyStrong = document.createElement('strong');
-                    keyStrong.className = 'field-key';
-                    // Format header: replace underscores, capitalize
-                    keyStrong.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    fieldBlock.appendChild(keyStrong);
-                    
-                    const valueDiv = document.createElement('div');
-                    valueDiv.className = 'field-value';
+                    const strong = document.createElement('strong');
+                    strong.className = 'field-key';
+                    // No need to highlight keys, usually?
+                    strong.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
+                    fieldBlock.appendChild(strong);
 
-                    // Handle links in preview
-                    if (header === 'website' && value) {
-                        const link = document.createElement('a');
-                        link.href = value.startsWith('http') ? value : 'http://' + value;
-                        link.textContent = value;
-                        link.target = '_blank'; 
-                        valueDiv.appendChild(link);
-                    } else if (header === 'phone' && value) {
-                        const link = document.createElement('a');
-                        link.href = `tel:${value.replace(/\D/g,'')}`;
-                        link.textContent = value;
-                        valueDiv.appendChild(link);
-                    } else {
-                        valueDiv.appendChild(document.createTextNode(value));
-                    }
-                    fieldBlock.appendChild(valueDiv);
+                    const span = document.createElement('span');
+                    span.className = 'field-value';
+                    span.innerHTML = highlightText(value, currentSearchTerm);
+                    fieldBlock.appendChild(span);
                     previewContentDiv.appendChild(fieldBlock);
                 }
             });
@@ -486,6 +501,8 @@
         function filterData() {
             const searchTerm = searchInput.value.toLowerCase();
             const newClientFilterValue = newClientsFilter.value;
+
+            currentSearchTerm = searchTerm; // Update global search term
 
             const filteredData = allData.filter(row => {
                 // Filter by 'new_clients' status
