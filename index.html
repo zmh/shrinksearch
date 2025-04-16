@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Therapist Finder</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00FF00; /* Bright green text */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            margin: 0;
+            padding: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .controls label {
+            color: #FFFF00; /* Yellow labels */
+        }
+        .controls input[type="text"],
+        .controls select {
+            background-color: #1a1a1a;
+            color: #00FF00;
+            border: 1px solid #333333;
+            padding: 5px;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        .controls input[type="text"]::placeholder {
+            color: #555555;
+        }
+        #dataTableContainer {
+            width: 100%;
+            overflow-x: auto; /* Allow horizontal scrolling for the table */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #333333;
+            font-size: 12px; /* Smaller font for higher density */
+        }
+        th, td {
+            border: 1px solid #333333;
+            padding: 4px 6px;
+            text-align: left;
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis for overflow */
+            max-width: 200px; /* Limit max width of columns */
+        }
+        th {
+            background-color: #1a1a1a;
+            color: #FFA500; /* Orange headers */
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #0d0d0d;
+        }
+        tbody tr:hover {
+            background-color: #2a2a2a;
+        }
+        td a {
+             color: #00FFFF; /* Cyan links */
+             text-decoration: none;
+        }
+        td a:hover {
+             text-decoration: underline;
+        }
+        #status {
+            color: #FF0000; /* Red status messages */
+            margin-top: 10px;
+        }
+        #loading {
+            color: #FFFF00; /* Yellow loading message */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>NYC Therapist Finder</h1>
+
+    <div class="controls">
+        <label for="search">Search:</label>
+        <input type="text" id="search" placeholder="Search any field...">
+
+        <label for="newClientsFilter">New Clients:</label>
+        <select id="newClientsFilter">
+            <option value="all">All</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Waitlist">Waitlist</option>
+            <!-- Options will be populated dynamically if needed -->
+        </select>
+
+        <!-- Add more filters here as needed -->
+         <span id="rowCount"></span>
+    </div>
+
+    <div id="status"></div>
+    <div id="loading">Loading data...</div>
+
+    <div id="dataTableContainer">
+        <table id="therapistTable">
+            <thead>
+                <!-- Headers will be populated dynamically -->
+            </thead>
+            <tbody>
+                <!-- Data rows will be populated dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const csvUrl = 'nyc_therapists.csv';
+        const tableBody = document.querySelector('#therapistTable tbody');
+        const tableHead = document.querySelector('#therapistTable thead');
+        const searchInput = document.getElementById('search');
+        const newClientsFilter = document.getElementById('newClientsFilter');
+        const statusDiv = document.getElementById('status');
+        const loadingDiv = document.getElementById('loading');
+        const rowCountSpan = document.getElementById('rowCount');
+
+        let allData = [];
+        let headers = [];
+        let newClientsColIndex = -1;
+        let websiteColIndex = -1;
+        let phoneColIndex = -1;
+
+        // Basic CSV parser (handles simple cases, might need improvement for complex CSVs)
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) { // Skip blank lines
+                    // Basic split, doesn't handle commas inside quotes well
+                    const values = line.split(','); 
+                    // Trim values only if they are not potentially part of a quoted string
+                    // A more robust parser would handle quotes properly
+                    if (values.length === headers.length) { // Ensure row has expected number of columns
+                         const row = {};
+                        headers.forEach((header, index) => {
+                            row[header] = values[index] ? values[index].trim() : '';
+                        });
+                        data.push(row);
+                    } else {
+                        console.warn(`Skipping malformed row ${i + 1}: Expected ${headers.length} columns, found ${values.length}`);
+                    }
+                }
+            }
+            return data;
+        }
+
+        function renderTable(dataToRender) {
+            tableBody.innerHTML = ''; // Clear existing rows
+            if (dataToRender.length === 0) {
+                 tableBody.innerHTML = '<tr><td colspan="' + headers.length + '">No matching therapists found.</td></tr>';
+                 rowCountSpan.textContent = 'Showing 0 therapists';
+                return;
+            }
+
+            dataToRender.forEach(row => {
+                const tr = document.createElement('tr');
+                headers.forEach((header, index) => {
+                    const td = document.createElement('td');
+                    let cellValue = row[header] !== undefined ? row[header] : '';
+
+                    // Make website and phone clickable
+                    if (index === websiteColIndex && cellValue) {
+                        const link = document.createElement('a');
+                        link.href = cellValue.startsWith('http') ? cellValue : 'http://' + cellValue;
+                        link.textContent = cellValue;
+                        link.target = '_blank'; // Open in new tab
+                        td.appendChild(link);
+                    } else if (index === phoneColIndex && cellValue) {
+                         const link = document.createElement('a');
+                         link.href = `tel:${cellValue.replace(/\D/g,'')}`; // Create tel link, remove non-digits
+                         link.textContent = cellValue;
+                         td.appendChild(link);
+                    } else {
+                        td.textContent = cellValue;
+                        td.title = cellValue; // Show full text on hover
+                    }
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+            rowCountSpan.textContent = `Showing ${dataToRender.length} of ${allData.length} therapists`;
+        }
+
+        function filterData() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const newClientFilterValue = newClientsFilter.value;
+
+            const filteredData = allData.filter(row => {
+                // Filter by 'new_clients' status
+                let newClientMatch = true;
+                if (newClientFilterValue !== 'all' && newClientsColIndex !== -1) {
+                    const clientStatus = row[headers[newClientsColIndex]] || '';
+                    // Basic matching - might need refinement based on actual data variations
+                    if (newClientFilterValue === 'Yes') {
+                        newClientMatch = clientStatus.toLowerCase().includes('yes') || clientStatus.toLowerCase().includes('accepting'); // Allow variations
+                    } else if (newClientFilterValue === 'No') {
+                         newClientMatch = clientStatus.toLowerCase().includes('no') || clientStatus.toLowerCase().includes('not accepting');
+                    } else if (newClientFilterValue === 'Waitlist') {
+                        newClientMatch = clientStatus.toLowerCase().includes('waitlist');
+                    }
+                }
+
+                // Filter by search term (searches all fields)
+                let searchMatch = false;
+                if (!searchTerm) {
+                    searchMatch = true; // No search term means match all
+                } else {
+                    searchMatch = Object.values(row).some(value =>
+                        value && value.toString().toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                return newClientMatch && searchMatch;
+            });
+
+            renderTable(filteredData);
+        }
+
+        async function loadAndDisplayData() {
+            try {
+                statusDiv.textContent = '';
+                loadingDiv.style.display = 'block';
+                tableBody.innerHTML = '';
+                tableHead.innerHTML = '';
+
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+
+                allData = parseCSV(csvText);
+
+                if (!headers.length || !allData.length) {
+                     throw new Error('Failed to parse CSV or CSV is empty.');
+                }
+
+                // Find column indices for specific fields
+                newClientsColIndex = headers.indexOf('new_clients');
+                websiteColIndex = headers.indexOf('website');
+                phoneColIndex = headers.indexOf('phone');
+
+                // Populate table headers
+                const tr = document.createElement('tr');
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
+                    tr.appendChild(th);
+                });
+                tableHead.appendChild(tr);
+
+                // Initial render
+                renderTable(allData);
+
+                // Add event listeners for controls
+                searchInput.addEventListener('input', filterData);
+                newClientsFilter.addEventListener('change', filterData);
+
+            } catch (error) {
+                console.error('Error loading or processing data:', error);
+                statusDiv.textContent = `Error: ${error.message}. Please ensure '${csvUrl}' is in the same directory and correctly formatted.`;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Load data on page load
+        loadAndDisplayData();
+
+    </script>
+
+</body>
+</html>
