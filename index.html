@@ -453,8 +453,9 @@
             }
             saveFavorites();
             updateFavoritesButton();
-            // Refresh table to update star state potentially
-            displayData(); 
+            // Update the star in the specific table row
+            updateTableRowStar(originalIndex);
+
             // Restore preview star update logic
             const currentPreviewIndex = parseInt(previewContentDiv.dataset.originalIndex, 10);
             if (!isNaN(currentPreviewIndex) && currentPreviewIndex === originalIndex) {
@@ -817,6 +818,19 @@
                  e.stopPropagation();
                  toggleFavorite(originalIndex);
              }; 
+        }
+
+        function updateTableRowStar(originalIndex) {
+            // Corrected selector to use data-original-index
+            const row = tableBody.querySelector(`tr[data-original-index="${originalIndex}"]`);
+            if (row) {
+                // Corrected selector to use .star
+                const starSpan = row.querySelector('.star'); 
+                if (starSpan) {
+                    starSpan.innerHTML = isFavorite(originalIndex) ? '★' : '☆';
+                    starSpan.classList.toggle('is-favorite', isFavorite(originalIndex));
+                }
+            }
         }
 
         function handleRowHover(event) {
