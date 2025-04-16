@@ -517,7 +517,8 @@
                         'short_specialties',  // Corrected: underscore
                         'all_short_descriptions_html',
                         'originalindex', // Use lowercase for comparison
-                        'image_url'
+                        'image_url',
+                        'locations'
                     ]);
                     headers = Object.keys(allData[0]).filter(header => 
                         !columnsToHide.has(header.toLowerCase())
@@ -635,8 +636,10 @@
                 headers.forEach(header => {
                     const td = document.createElement('td');
                     const value = item[header] !== undefined ? item[header] : '';
-                    // Set cell content, applying highlighting
-                    td.innerHTML = highlightText(String(value), searchInput.value);
+                    // --- Clean the value before displaying in the table cell --- 
+                    const cleanedValue = cleanDisplayValue(header, value);
+                    // --- Set cell content using the cleaned value --- 
+                    td.innerHTML = highlightText(cleanedValue, searchInput.value);
                     rowTr.appendChild(td);
                 });
                 tbody.appendChild(rowTr);
@@ -838,18 +841,19 @@
                 case 'client_focus_communities': 
                     displayValue = displayValue.replace(/^\s*communities\s*/i, '').trim(); 
                     break;
-                case 'client_focus_languages': 
-                    displayValue = displayValue.replace(/^\s*languages\s*/i, '').trim(); 
-                    break;
                 case 'client_focus_participants': 
                     displayValue = displayValue.replace(/^\s*participants\s*/i, '').trim(); 
                     break;
-                case 'locations_and_primary_location': // Check JSON key
-                     displayValue = displayValue.replace(/^\s*locations and primary location\s*/i, '').trim();
-                     if (String(value) === displayValue) { // Check if replace did nothing
-                        displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
-                     }
-                     break;
+                case 'primary_location': 
+                    displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
+                    displayValue = displayValue.replace(/^\s*email me\s*/i, '').trim();  
+                    displayValue = displayValue.replace(/^\s*my website\s*/i, '').trim();  
+                    break;
+                case 'additional_location': 
+                    displayValue = displayValue.replace(/^\s*additional location\s*/i, '').trim();
+                    displayValue = displayValue.replace(/^\s*email me\s*/i, '').trim();  
+                    displayValue = displayValue.replace(/^\s*my website\s*/i, '').trim();  
+                    break;
                 // Add more cases if needed
                 default:
                     // No specific cleanup for this key
