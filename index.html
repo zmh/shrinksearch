@@ -444,8 +444,13 @@
             if (therapist.all_short_descriptions_text) {
                 const descP = document.createElement('p');
                 descP.className = 'preview-short-desc';
-                const formattedDesc = therapist.all_short_descriptions_text.replace(/  +/g, '<br>');
-                descP.innerHTML = highlightText(formattedDesc, currentSearchTerm);
+                // Refined formatting: Replace $ with <br>$, then replace 2+ spaces with <br>
+                let formattedDesc = String(therapist.all_short_descriptions_text || ''); // Ensure it's a string
+                formattedDesc = formattedDesc.replace(/\$/g, '<br>$'); // Add break before dollar signs
+                formattedDesc = formattedDesc.replace(/ {2,}/g, '<br>'); // Replace 2+ spaces with a break
+                formattedDesc = formattedDesc.replace(/^<br>|<br>$/g, ''); // Trim leading/trailing breaks if any
+
+                descP.innerHTML = highlightText(formattedDesc.trim(), currentSearchTerm); // Highlight after formatting and trimming
                 previewContentDiv.appendChild(descP);
             }
             // --- End Header --- 
