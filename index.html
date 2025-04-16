@@ -625,7 +625,7 @@
 
              // Add Fav column header
              const favTh = document.createElement('th');
-             favTh.textContent = 'Fav';
+             favTh.textContent = '';
              tr.insertBefore(favTh, tr.firstChild); // Add to the beginning
 
             // --- Create Table Rows --- 
@@ -883,6 +883,9 @@
                     break;
                 case 'client_focus_participants': 
                     displayValue = displayValue.replace(/^\s*participants\s*/i, '').trim(); 
+                    break;
+                case 'nearby_areas': 
+                    displayValue = displayValue.replace(/^\s*cities\s*/i, '').trim(); 
                     break;
                 case 'primary_location': 
                     displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
