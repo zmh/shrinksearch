@@ -95,11 +95,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 0;
-            height: 100vh; /* Full viewport height */
-            display: flex; /* Use flexbox for overall layout */
-            flex-direction: column; /* Stack controls and main content vertically */
-            overflow: hidden; /* Prevent body scrolling */
+            padding: 10px; /* Restore original padding */
+            /* Remove full height/flex/overflow from body */
         }
 
         /* Styles for scrollbar */
@@ -119,31 +116,25 @@
         }
 
         /* --- Layout Containers --- */
-        #top-container { /* NEW */
-            flex-shrink: 0; /* Prevent this section from shrinking */
-            padding: 10px;  /* Add padding here */
-            border-bottom: 1px solid var(--border-color); /* Move border here */
-        }
 
         .controls { /* Assuming class for search/filter area */
+            padding: 10px; /* Restore padding */
+            border-bottom: 1px solid var(--border-color); /* Restore border */
+            /* Remove margin-bottom added during flex attempt */
             /* Remove other flex properties if they existed */
             display: flex; /* Keep inner items flex */
             gap: 15px;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 5px; /* Optional space below controls */
         }
 
         #mainContent { /* Container for table + preview */
             display: flex;
-            flex-grow: 1; /* Take remaining vertical space */
-            padding: 10px;
-            gap: 10px;
-            overflow: hidden; /* VERY IMPORTANT: Prevent this container from scrolling */
+            gap: 10px; /* Keep gap */
+            /* Remove flex-grow, padding, overflow added for full height */
         }
 
         #dataTableContainer { /* Table container */
-            flex-grow: 1; /* Table container takes available horizontal space */
             overflow: auto; /* Allow both horizontal and vertical scroll if table is wide/long */
             border: 1px solid var(--border-color);
             position: relative; /* For sticky header */
@@ -152,7 +143,6 @@
 
         #previewPane { /* Preview pane */
             width: 350px; /* Fixed width */
-            flex-shrink: 0; /* Prevent preview from shrinking */
             overflow-y: auto; /* Allow vertical scroll *within* the preview */
             border: 1px solid var(--border-color);
             padding: 15px;
@@ -391,34 +381,32 @@
 </head>
 <body>
 
-    <div id="top-container"> <!-- NEW WRAPPER -->
-        <h1>NYC Therapist Finder</h1>
+    <h1>NYC Therapist Finder</h1>
 
-        <!-- Theme Picker -->
-        <div id="themePicker">
-            <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
-            <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
-            <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
-        </div>
+    <!-- Theme Picker -->
+    <div id="themePicker">
+        <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
+        <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
+        <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
+    </div>
 
-        <div class="controls">
-            <label for="searchInput">Search:</label>
-            <input type="text" id="searchInput" placeholder="Type to search all fields...">
+    <div class="controls">
+        <label for="searchInput">Search:</label>
+        <input type="text" id="searchInput" placeholder="Type to search all fields...">
 
-            <label for="newClientsSelect">New Clients:</label>
-            <select id="newClientsSelect">
-                <option value="any">Any</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
+        <label for="newClientsSelect">New Clients:</label>
+        <select id="newClientsSelect">
+            <option value="any">Any</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+        </select>
 
-            <button id="favoritesFilterBtn">Favorites (0)</button> <!-- Favorites Button -->
+        <button id="favoritesFilterBtn">Favorites (0)</button> <!-- Favorites Button -->
 
-            <span id="rowCountStatus" style="margin-left: auto;"></span>
-        </div>
-        <div id="status"></div>
-        <div id="loading">Loading data...</div> <!-- Visible initially -->
-    </div> <!-- END WRAPPER #top-container -->
+        <span id="rowCountStatus" style="margin-left: auto;"></span>
+    </div>
+    <div id="status"></div>
+    <div id="loading">Loading data...</div> <!-- Visible initially -->
 
     <!-- New main content wrapper -->
     <div id="mainContent">
