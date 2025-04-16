@@ -711,7 +711,7 @@
                 formattedDesc = formattedDesc.replace(/ {2,}/g, '<br>'); // Replace 2+ spaces with a break
                 formattedDesc = formattedDesc.replace(/^<br>|<br>$/g, ''); // Trim leading/trailing breaks if any
 
-                descP.innerHTML = highlightText(formattedDesc.trim(), currentSearchTerm); // Highlight after formatting and trimming
+                descP.innerHTML = highlightText(formattedDesc.trim(), currentSearchTerm || ''); // Highlight after formatting and trimming
                 previewContentDiv.appendChild(descP);
             }
             // --- End Header --- 
@@ -725,47 +725,47 @@
                 let displayValue = value; // Start with the original value
 
                 // --- Clean up specific fields before displaying ---
-                const keyLower = key.toLowerCase(); // For case-insensitive matching if needed
-                switch (key) {
-                    case 'Fees':
+                const keyLower = key.toLowerCase(); // Use this for case-insensitive matching
+                switch (keyLower) { // Switch on the lowercased key
+                    case 'fees': // Lowercase
                         displayValue = displayValue.replace(/^Fees\s*/i, '').trim();
                         break;
-                    case 'Payment Methods':
+                    case 'payment methods': // Lowercase
                         displayValue = displayValue.replace(/^Payment Methods\s*/i, '').trim();
                         break;
-                    case 'Insurance Accepted':
+                    case 'insurance accepted': // Lowercase
                          // Careful: Might remove 'Insurance' if it's a company name. Check data format.
                          // Assuming it's always a prefix like "Insurance: XYZ". Remove only if prefix.
                         if (displayValue.toLowerCase().startsWith('insurance ')) {
                             displayValue = displayValue.substring(10).trim(); // Remove 'Insurance '
                         }
                         break;
-                    case 'Education Years In Practice':
+                    case 'education years in practice': // Lowercase
                          // This looks like it removes the whole value? Let's assume it's a prefix.
                         displayValue = displayValue.replace(/^Education and Years In Practice\s*/i, '').trim();
                         break;
-                    case 'Additional Credentials':
+                    case 'additional credentials': // Lowercase
                         displayValue = displayValue.replace(/^Additional Credentials\s*/i, '').trim();
                         break;
-                    case 'Top Specialties':
+                    case 'top specialties': // Lowercase
                         displayValue = displayValue.replace(/^Top Specialties\s*/i, '').trim();
                         break;
-                    case 'Expertise':
+                    case 'expertise': // Lowercase
                         displayValue = displayValue.replace(/^Expertise\s*/i, '').trim();
                         break;
-                    case 'Client Focus Age':
+                    case 'client focus age': // Lowercase
                         displayValue = displayValue.replace(/\s+age$/i, '').trim();
                         break;
-                    case 'Client Focus Participants':
+                    case 'client focus participants': // Lowercase
                         displayValue = displayValue.replace(/\s+participants$/i, '').trim();
                         break;
-                    case 'Locations and Primary Location':
+                    case 'locations and primary location': // Lowercase
                         displayValue = displayValue.replace(/^Primary Location:\s*/i, '').trim();
                         break;
-                    case 'Additional Location':
+                    case 'additional location': // Lowercase
                         displayValue = displayValue.replace(/^Additional Location:\s*/i, '').trim();
                         break;
-                    case 'Nearby Areas':
+                    case 'nearby areas': // Lowercase
                          displayValue = displayValue.replace(/\s+cities$/i, '').trim();
                          break;
                     // Add more cases here if needed
@@ -777,16 +777,16 @@
                 const fieldBlock = document.createElement('div');
                 fieldBlock.classList.add('field-block');
 
-                const fieldKeySpan = document.createElement('span');
-                fieldKeySpan.classList.add('field-key');
-                fieldKeySpan.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
+                const fieldKeyStrong = document.createElement('strong'); 
+                fieldKeyStrong.classList.add('field-key');
+                fieldKeyStrong.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
 
                 const fieldValueSpan = document.createElement('span');
                 fieldValueSpan.classList.add('field-value');
                 // Use the potentially cleaned displayValue
                 fieldValueSpan.innerHTML = highlightText(displayValue, currentSearchTerm || '');
 
-                fieldBlock.appendChild(fieldKeySpan);
+                fieldBlock.appendChild(fieldKeyStrong); 
                 fieldBlock.appendChild(fieldValueSpan);
                 previewContentDiv.appendChild(fieldBlock);
             });
