@@ -374,7 +374,6 @@
 
         <!-- New preview pane -->
         <div id="previewPane">
-            <span class="favorite-star" id="previewStar" title="Toggle Favorite">☆</span> <!-- Restore Preview Star -->
             <div id="previewContent">
                 <!-- Content is dynamically generated -->
             </div>
@@ -685,21 +684,42 @@
             }
             const therapist = allData[originalIndex];
             previewContentDiv.innerHTML = ''; // Clear previous
+            previewContentDiv.dataset.originalIndex = originalIndex; // Store index for star updates
 
-            // --- Create Header --- 
+            // --- Create Header (with Star) --- 
+            const headerDiv = document.createElement('div');
+            headerDiv.style.display = 'flex';
+            headerDiv.style.alignItems = 'center'; // Align star and name vertically
+            headerDiv.style.gap = '8px'; // Space between star and name
+
+            // Star
+            const starSpan = document.createElement('span');
+            starSpan.className = 'preview-star star'; // Add 'star' class for styling, 'preview-star' for selection
+            starSpan.innerHTML = isFavorite(originalIndex) ? '★' : '☆';
+            starSpan.classList.toggle('is-favorite', isFavorite(originalIndex));
+            starSpan.style.cursor = 'pointer';
+            starSpan.style.fontSize = '1.5em'; // Make star larger
+            starSpan.onclick = (e) => { 
+                e.stopPropagation(); // Prevent triggering row hover/click
+                toggleFavorite(originalIndex);
+            };
+            headerDiv.appendChild(starSpan);
+
             // Name
             if (therapist.name) {
                 const nameH3 = document.createElement('h3');
                 nameH3.innerHTML = highlightText(therapist.name, currentSearchTerm);
-                previewContentDiv.appendChild(nameH3);
+                nameH3.style.margin = '0'; // Remove default margin for better alignment
+                headerDiv.appendChild(nameH3);
             }
+            previewContentDiv.appendChild(headerDiv); // Add the header container
 
             // Degrees
             if (therapist.degrees) {
-                 const degreesP = document.createElement('p');
-                 degreesP.className = 'preview-degrees';
-                 degreesP.innerHTML = highlightText(therapist.degrees, currentSearchTerm);
-                 previewContentDiv.appendChild(degreesP);
+                const degreesP = document.createElement('p');
+                degreesP.className = 'preview-degrees';
+                degreesP.innerHTML = highlightText(therapist.degrees, currentSearchTerm);
+                previewContentDiv.appendChild(degreesP);
             }
 
             // Formatted Short Description Text
@@ -808,16 +828,20 @@
 
         // Restore Function 
         function updatePreviewStar(originalIndex) {
-             const star = document.getElementById('previewStar');
-             if (!star) return;
-             const isFav = isFavorite(originalIndex);
-             star.innerHTML = isFav ? '★' : '☆';
-             star.classList.toggle('is-favorite', isFav);
-             // Ensure listener is attached (or re-attached if preview is recreated)
-             star.onclick = (e) => { 
-                 e.stopPropagation();
-                 toggleFavorite(originalIndex);
-             }; 
+            // Find the star within the preview pane using its class
+            const star = previewContentDiv.querySelector('.preview-star'); 
+            if (!star) {
+                console.error("Could not find preview star element to update.");
+                return;
+            }
+            const isFav = isFavorite(originalIndex);
+            star.innerHTML = isFav ? '★' : '☆';
+            star.classList.toggle('is-favorite', isFav);
+            // Remove redundant onclick handler - it's set when the star is created in updatePreview
+            /* star.onclick = (e) => { 
+                e.stopPropagation();
+                toggleFavorite(originalIndex);
+            }; */
         }
 
         function updateTableRowStar(originalIndex) {
