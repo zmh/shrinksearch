@@ -278,6 +278,26 @@
             border: 2px solid var(--link-color); /* Highlight active theme */
         }
 
+        /* Style Favorites Button like text */
+        #favoritesFilterBtn {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0 10px; /* Match spacing */
+            font: inherit; /* Use body font */
+            color: var(--label-color); /* Use label color */
+            cursor: pointer;
+            text-decoration: none; /* Remove underline if any */
+            vertical-align: baseline;
+        }
+        #favoritesFilterBtn:hover {
+            text-decoration: underline;
+        }
+        #favoritesFilterBtn.filter-active { /* Use a class for active state */
+             font-weight: bold;
+             color: var(--star-color); /* Use star color */
+        }
+
         /* Responsive stacking for smaller screens */
         @media (max-width: 800px) {
             #mainContent {
@@ -434,11 +454,9 @@
             const count = favorites.size;
             btn.textContent = `Favorites (${count})`;
             if (showOnlyFavorites) {
-                 btn.style.fontWeight = 'bold';
-                 btn.style.color = 'var(--star-color)'; // Use star color to indicate filter active
+                 btn.classList.add('filter-active');
             } else {
-                 btn.style.fontWeight = 'normal';
-                 btn.style.color = 'var(--label-color)'; // Default label color
+                 btn.classList.remove('filter-active');
             }
         }
 
@@ -481,13 +499,13 @@
                 displayData();
 
                 // Create a debounced version of filterData
-                const debouncedFilterData = debounce(filterData, 300); // 300ms delay
+                const debouncedDisplayData = debounce(displayData, 300); // 300ms delay
 
                 // Add event listeners for controls (only once after data load)
-                searchInput.removeEventListener('input', debouncedFilterData); // Use debounced version
-                searchInput.addEventListener('input', debouncedFilterData); // Use debounced version
-                newClientsSelect.removeEventListener('change', filterData); // Filter doesn't need debounce
-                newClientsSelect.addEventListener('change', filterData); // Filter doesn't need debounce
+                searchInput.removeEventListener('input', debouncedDisplayData); // Use debounced version
+                searchInput.addEventListener('input', debouncedDisplayData); // Use debounced version
+                newClientsSelect.removeEventListener('change', displayData); // Filter doesn't need debounce
+                newClientsSelect.addEventListener('change', displayData); // Filter doesn't need debounce
 
             } catch (error) {
                 console.error('Error loading or processing data:', error);
@@ -744,6 +762,17 @@
             // Add hover listeners using event delegation after rows are added
             tableBody.removeEventListener('mouseover', handleRowHover);
             tableBody.addEventListener('mouseover', handleRowHover);
+
+            // Create a debounced version for search input
+            const debouncedDisplayData = debounce(displayData, 300); 
+
+            // Search Input Listener
+            searchInput.removeEventListener('input', debouncedDisplayData); 
+            searchInput.addEventListener('input', debouncedDisplayData);
+
+            // New Clients Filter Listener
+            newClientsSelect.removeEventListener('change', displayData); 
+            newClientsSelect.addEventListener('change', displayData);
 
             // Favorites Filter Button Listener
             document.getElementById('favoritesFilterBtn').addEventListener('click', () => {
