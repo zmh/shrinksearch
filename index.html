@@ -691,7 +691,7 @@
             };
             headerDiv.appendChild(starSpan);
 
-            // Name
+            // Name (RESTORED to show in sidebar header)
             if (therapist.name) {
                 const nameH3 = document.createElement('h3');
                 nameH3.innerHTML = highlightText(therapist.name, currentSearchTerm);
@@ -700,7 +700,7 @@
             }
             previewContentDiv.appendChild(headerDiv); // Add the header container
 
-            // Degrees
+            // Degrees (RESTORED to show in sidebar header)
             if (therapist.degrees) {
                 const degreesP = document.createElement('p');
                 degreesP.className = 'preview-degrees';
@@ -728,8 +728,10 @@
                 const value = therapist[key] !== undefined ? therapist[key] : 'N/A';
                 const keyLower = key.toLowerCase(); // Use this for checks
 
-                // Skip image URL, originalIndex, the HTML descriptions, short fields, and empty values
-                if (keyLower === 'image_url' || 
+                // Skip image URL, originalIndex, the HTML descriptions, short fields, name, degrees, and empty values
+                if (keyLower === 'name' || 
+                    keyLower === 'degrees' || 
+                    keyLower === 'image_url' || 
                     keyLower === 'originalindex' || 
                     keyLower === 'all_short_descriptions_html' || 
                     keyLower === 'short_participants' ||
