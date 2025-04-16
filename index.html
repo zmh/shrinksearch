@@ -26,7 +26,7 @@
 
         body[data-theme="solarized-dark"] {
             --bg-color: #002b36; 
-            --text-color: #839496; 
+            --text-color: #93a1a1; /* Brighter Gray for contrast */
             --text-color-secondary: #586e75; 
             --text-color-tertiary: #657b83; 
             --header-color: #cb4b16; /* Orange */
@@ -43,7 +43,7 @@
 
         body[data-theme="solarized-light"] {
             --bg-color: #fdf6e3;
-            --text-color: #657b83;
+            --text-color: #586e75; /* Darker Gray for contrast */
             --text-color-secondary: #93a1a1;
             --text-color-tertiary: #839496;
             --header-color: #cb4b16; /* Orange */
@@ -174,23 +174,28 @@
         #previewPane h3 {
             color: var(--header-color);
             margin-top: 0;
-            margin-bottom: 2px; /* Reduced margin */
+            margin-bottom: 1px; /* Further reduced margin */
             font-size: 13px;
             padding-bottom: 0;
         }
         #previewPane .preview-degrees {
             font-size: 10px;
             color: var(--text-color-tertiary);
-            margin-bottom: 5px;
+            margin-bottom: 3px; /* Reduced margin */
         }
         #previewPane .preview-short-desc {
             font-size: 10px;
             color: var(--text-color-tertiary);
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            padding-top: 5px;
+            margin-bottom: 8px; /* Reduced margin */
+            padding-bottom: 8px; /* Reduced padding */
+            padding-top: 4px; /* Reduced padding */
             border-bottom: 1px dotted var(--border-color-light);
             white-space: normal; /* Allow wrapping */
+        }
+        #previewPane div.field-block {
+            margin-bottom: 12px; /* Increased space between field blocks */
+            border-bottom: 1px dotted var(--border-color-light); /* Separator */
+            padding-bottom: 8px;
         }
         #previewPane strong.field-key {
             color: var(--label-color);
@@ -200,7 +205,6 @@
         }
         #previewPane .field-value {
             display: block; /* Value below key */
-            padding-left: 5px; /* Indent value slightly */
             font-size: 10px;
             color: var(--text-color);
             word-wrap: break-word; /* Wrap long values */
@@ -297,9 +301,8 @@
 
         <!-- New preview pane -->
         <div id="previewPane">
-            <h3>Details</h3>
             <div id="previewContent">
-                <p>Hover over a row in the table to see details here.</p>
+                <!-- Content is dynamically generated -->
             </div>
         </div>
     </div>
@@ -380,7 +383,7 @@
 
         // --- New functions for preview --- 
         function clearPreview() {
-            previewContentDiv.innerHTML = '<p>Hover over a row in the table to see details here.</p>';
+            previewContentDiv.innerHTML = ''; // Clear previous
         }
 
         function updatePreview(originalIndex) {
