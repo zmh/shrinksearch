@@ -170,18 +170,18 @@
         }
         #dataTableContainer td a,
         #previewPane .field-value a {
-            color: var(--link-color);
+            color: var(--text-color); /* CHANGED to use main text color (green) */
             text-decoration: none; /* No underline */
         }
         #dataTableContainer td a:hover,
         #dataTableContainer td a:visited,
         #previewPane .field-value a:hover,
         #previewPane .field-value a:visited {
-            color: var(--link-color); /* Keep the same color */
+            color: var(--text-color); /* CHANGED to keep the same main text color */
             text-decoration: none; /* Ensure no underline on hover */
         }
         td a {
-             color: var(--link-color);
+             color: var(--text-color);
              text-decoration: none;
         }
         td a:hover {
@@ -200,7 +200,7 @@
             display: flex;
             gap: 10px;
             /* Calculate height minus controls/header - adjust as needed */
-            height: calc(100vh - 120px);
+            height: calc(100vh - 140px); /* INCREASED subtracted value from 120px */
         }
         #previewPane {
             flex: 1; /* Takes up 1 part of space */
@@ -654,11 +654,12 @@
                     // --- Clean the value before displaying in the table cell --- 
                     const cleanedValue = cleanDisplayValue(header, value);
                     // --- Set cell content using the cleaned value --- 
-                    // --- MODIFIED: Make website clickable --- 
-                    if (header.toLowerCase() === 'website' && isValidUrl(cleanedValue)) {
+                    // --- MODIFIED: Make website OR page_url clickable --- 
+                    const lowerHeader = header.toLowerCase();
+                    if ((lowerHeader === 'website' || lowerHeader === 'page_url') && isValidUrl(cleanedValue)) {
                         const link = document.createElement('a');
                         link.href = cleanedValue;
-                        link.textContent = cleanedValue.replace(/^https?:\/\//, ''); // Display without http(s):// - FIXED REGEX
+                        link.textContent = cleanedValue.replace(/^https?:\/\//, ''); // Display without http(s)://
                         link.target = '_blank'; // Open in new tab
                         link.rel = 'noopener noreferrer';
                         td.appendChild(link);
@@ -786,11 +787,11 @@
                 const fieldValueSpan = document.createElement('span');
                 fieldValueSpan.classList.add('field-value');
                 // Use the potentially cleaned displayValue
-                // --- MODIFIED: Make website clickable --- 
-                if (keyLower === 'website' && isValidUrl(displayValue)) {
+                // --- MODIFIED: Make website OR page_url clickable --- 
+                if ((keyLower === 'website' || keyLower === 'page_url') && isValidUrl(displayValue)) {
                     const link = document.createElement('a');
                     link.href = displayValue;
-                    link.textContent = displayValue.replace(/^https?:\/\//, ''); // Display without http(s):// - FIXED REGEX
+                    link.textContent = displayValue.replace(/^https?:\/\//, ''); // Display without http(s)://
                     link.target = '_blank'; // Open in new tab
                     link.rel = 'noopener noreferrer';
                     // Apply highlighting to the link's text content if needed (optional)
