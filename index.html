@@ -109,28 +109,21 @@
             padding-bottom: 5px;
             text-align: center; /* Center header text */
         }
-        #previewPane .preview-image {
-            display: block;
-            max-width: 80px; /* Control image size */
-            max-height: 80px;
-            margin: 5px auto 10px auto; /* Center image */
-            border: 1px solid #333;
-            background-color: #1a1a1a; /* Placeholder bg */
-            color: #555; /* Placeholder text color */
-            text-align: center;
-            line-height: 80px; /* Vertically center placeholder text */
-            font-size: 10px;
-        }
         #previewPane .preview-degrees {
             font-size: 10px;
             color: #aaa; /* Dimmer color for degrees */
             text-align: center;
             margin-bottom: 15px;
         }
-        #previewPane div.field-block {
-            margin-bottom: 8px; /* Space between fields */
-            border-bottom: 1px dotted #222; /* Separator */
-            padding-bottom: 8px;
+        #previewPane .preview-short-desc {
+            font-size: 10px;
+            color: #ccc; /* Slightly brighter than degrees */
+            text-align: left; /* Align left for readability */
+            margin-bottom: 15px;
+            padding: 5px;
+            border-top: 1px dotted #222;
+            border-bottom: 1px dotted #222;
+            white-space: normal; /* Allow wrapping */
         }
         #previewPane strong.field-key {
             color: #FFFF00; /* Yellow keys */
@@ -302,27 +295,6 @@
             previewContentDiv.innerHTML = ''; // Clear previous
 
             // --- Create Header --- 
-            // Image
-            if (therapist.image_url) {
-                const img = document.createElement('img');
-                img.src = therapist.image_url;
-                img.alt = therapist.name || 'Therapist image';
-                img.className = 'preview-image';
-                img.onerror = () => { // Handle broken images
-                    img.parentNode.replaceChild(document.createTextNode('[No Image]'), img);
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'preview-image';
-                    placeholder.textContent = 'No Image';
-                    previewContentDiv.appendChild(placeholder);
-                };
-                previewContentDiv.appendChild(img);
-            } else {
-                const placeholder = document.createElement('div');
-                placeholder.className = 'preview-image';
-                placeholder.textContent = 'No Image';
-                previewContentDiv.appendChild(placeholder);
-            }
-
             // Name
             if (therapist.name) {
                 const nameH3 = document.createElement('h3');
@@ -337,12 +309,22 @@
                 degreesP.textContent = therapist.degrees;
                 previewContentDiv.appendChild(degreesP);
             }
+
+            // Formatted Short Description Text
+            if (therapist.all_short_descriptions_text) {
+                const descP = document.createElement('p');
+                descP.className = 'preview-short-desc';
+                // Replace double spaces with <br> for line breaks in HTML
+                const formattedDesc = therapist.all_short_descriptions_text.replace(/  +/g, '<br>');
+                descP.innerHTML = formattedDesc; // Use innerHTML to render breaks
+                previewContentDiv.appendChild(descP);
+            }
             // --- End Header --- 
 
             // --- Create Fields --- 
             headers.forEach(header => {
                 // Skip fields already shown in header
-                if (header === 'name' || header === 'degrees' || header === 'image_url') {
+                if (header === 'name' || header === 'degrees' || header === 'image_url' || header === 'all_short_descriptions_text') {
                     return; 
                 }
 
