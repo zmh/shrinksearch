@@ -719,39 +719,54 @@
             // --- Create Fields --- 
             headers.forEach((key, index) => {
                 const value = therapist[key] !== undefined ? therapist[key] : 'N/A';
-                // Skip image URL, originalIndex, the HTML descriptions, and empty values
-                if (key === 'image_url' || key === 'originalIndex' || key === 'all_short_descriptions_html' || !value) return; 
+                const keyLower = key.toLowerCase(); // Use this for checks
+
+                // Skip image URL, originalIndex, the HTML descriptions, short fields, and empty values
+                if (keyLower === 'image_url' || 
+                    keyLower === 'originalindex' || 
+                    keyLower === 'all_short_descriptions_html' || 
+                    keyLower === 'short participants' ||
+                    keyLower === 'short fees' ||
+                    keyLower === 'short specialties' ||
+                    !value) return; 
 
                 let displayValue = value; // Start with the original value
 
                 // --- Clean up specific fields before displaying ---
-                const keyLower = key.toLowerCase(); // Use this for case-insensitive matching
+                console.log(`[Debug updatePreview] Original Key: ${key}, Original Value: ${value}`);
                 switch (keyLower) { // Switch on the lowercased key
                     case 'fees': // Lowercase
-                        displayValue = displayValue.replace(/^Fees\s*/i, '').trim();
+                        console.log(`[Debug updatePreview] Before Fees clean: ${displayValue}`);
+                        displayValue = displayValue.replace(/^fees\s*/i, '').trim(); // Use lowercase regex
+                        console.log(`[Debug updatePreview] After Fees clean: ${displayValue}`);
                         break;
                     case 'payment methods': // Lowercase
-                        displayValue = displayValue.replace(/^Payment Methods\s*/i, '').trim();
+                        console.log(`[Debug updatePreview] Before Payment Methods clean: ${displayValue}`);
+                        displayValue = displayValue.replace(/^payment methods\s*/i, '').trim(); // Use lowercase regex
+                        console.log(`[Debug updatePreview] After Payment Methods clean: ${displayValue}`);
                         break;
                     case 'insurance accepted': // Lowercase
-                         // Careful: Might remove 'Insurance' if it's a company name. Check data format.
-                         // Assuming it's always a prefix like "Insurance: XYZ". Remove only if prefix.
-                        if (displayValue.toLowerCase().startsWith('insurance ')) {
-                            displayValue = displayValue.substring(10).trim(); // Remove 'Insurance '
-                        }
-                        break;
+                        console.log(`[Debug updatePreview] Before Insurance clean: ${displayValue}`);
+                         // Refined logic: Replace 'Insurance' or 'Insurance:' at the start, case-insensitive
+                         displayValue = displayValue.replace(/^insurance(:)?\s*/i, '').trim(); 
+                         /* Original logic:
+                         if (displayValue.toLowerCase().startsWith('insurance ')) {
+                             displayValue = displayValue.substring(10).trim(); // Remove 'Insurance '
+                         } */
+                         console.log(`[Debug updatePreview] After Insurance clean: ${displayValue}`);
+                         break;
                     case 'education years in practice': // Lowercase
                          // This looks like it removes the whole value? Let's assume it's a prefix.
-                        displayValue = displayValue.replace(/^Education and Years In Practice\s*/i, '').trim();
+                        displayValue = displayValue.replace(/^education and years in practice\s*/i, '').trim();
                         break;
                     case 'additional credentials': // Lowercase
-                        displayValue = displayValue.replace(/^Additional Credentials\s*/i, '').trim();
+                        displayValue = displayValue.replace(/^additional credentials\s*/i, '').trim();
                         break;
                     case 'top specialties': // Lowercase
-                        displayValue = displayValue.replace(/^Top Specialties\s*/i, '').trim();
+                        displayValue = displayValue.replace(/^top specialties\s*/i, '').trim();
                         break;
                     case 'expertise': // Lowercase
-                        displayValue = displayValue.replace(/^Expertise\s*/i, '').trim();
+                        displayValue = displayValue.replace(/^expertise\s*/i, '').trim();
                         break;
                     case 'client focus age': // Lowercase
                         displayValue = displayValue.replace(/\s+age$/i, '').trim();
@@ -760,10 +775,10 @@
                         displayValue = displayValue.replace(/\s+participants$/i, '').trim();
                         break;
                     case 'locations and primary location': // Lowercase
-                        displayValue = displayValue.replace(/^Primary Location:\s*/i, '').trim();
+                        displayValue = displayValue.replace(/^primary location:\s*/i, '').trim();
                         break;
                     case 'additional location': // Lowercase
-                        displayValue = displayValue.replace(/^Additional Location:\s*/i, '').trim();
+                        displayValue = displayValue.replace(/^additional location:\s*/i, '').trim();
                         break;
                     case 'nearby areas': // Lowercase
                          displayValue = displayValue.replace(/\s+cities$/i, '').trim();
