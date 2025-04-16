@@ -89,6 +89,12 @@
             padding: 10px;
             overflow: hidden; /* Prevent body scrolling */
         }
+        /* --- NEW: Widen Search Bar --- */
+        #searchInput {
+            min-width: 300px; /* Adjust as needed */
+        }
+        /* --- END NEW CSS --- */
+
         /* Apply variables to scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -162,6 +168,18 @@
             background-color: var(--hover-bg-color);
             cursor: default; /* Indicate hover/selection */
         }
+        #dataTableContainer td a,
+        #previewPane .field-value a {
+            color: var(--link-color);
+            text-decoration: none; /* No underline */
+        }
+        #dataTableContainer td a:hover,
+        #dataTableContainer td a:visited,
+        #previewPane .field-value a:hover,
+        #previewPane .field-value a:visited {
+            color: var(--link-color); /* Keep the same color */
+            text-decoration: none; /* Ensure no underline on hover */
+        }
         td a {
              color: var(--link-color);
              text-decoration: none;
@@ -229,9 +247,6 @@
             color: var(--text-color);
             word-wrap: break-word; /* Wrap long values */
             margin-bottom: 2px; /* Small space below value before next key */
-        }
-        #previewPane .field-value a {
-           color: var(--link-color);
         }
 
         /* Highlight Style */
@@ -639,7 +654,18 @@
                     // --- Clean the value before displaying in the table cell --- 
                     const cleanedValue = cleanDisplayValue(header, value);
                     // --- Set cell content using the cleaned value --- 
-                    td.innerHTML = highlightText(cleanedValue, searchInput.value);
+                    // --- MODIFIED: Make website clickable --- 
+                    if (header.toLowerCase() === 'website' && isValidUrl(cleanedValue)) {
+                        const link = document.createElement('a');
+                        link.href = cleanedValue;
+                        link.textContent = cleanedValue.replace(/^https?:\/\//, ''); // Display without http(s):// - FIXED REGEX
+                        link.target = '_blank'; // Open in new tab
+                        link.rel = 'noopener noreferrer';
+                        td.appendChild(link);
+                    } else {
+                        td.innerHTML = highlightText(cleanedValue, searchInput.value);
+                    }
+                    // --- END Modification ---
                     rowTr.appendChild(td);
                 });
                 tbody.appendChild(rowTr);
@@ -760,7 +786,20 @@
                 const fieldValueSpan = document.createElement('span');
                 fieldValueSpan.classList.add('field-value');
                 // Use the potentially cleaned displayValue
-                fieldValueSpan.innerHTML = highlightText(displayValue, currentSearchTerm || '');
+                // --- MODIFIED: Make website clickable --- 
+                if (keyLower === 'website' && isValidUrl(displayValue)) {
+                    const link = document.createElement('a');
+                    link.href = displayValue;
+                    link.textContent = displayValue.replace(/^https?:\/\//, ''); // Display without http(s):// - FIXED REGEX
+                    link.target = '_blank'; // Open in new tab
+                    link.rel = 'noopener noreferrer';
+                    // Apply highlighting to the link's text content if needed (optional)
+                    link.innerHTML = highlightText(link.textContent, currentSearchTerm || ''); 
+                    fieldValueSpan.appendChild(link);
+                } else {
+                    fieldValueSpan.innerHTML = highlightText(displayValue, currentSearchTerm || '');
+                }
+                // --- END Modification ---
 
                 fieldDiv.appendChild(fieldKeyStrong); 
                 fieldDiv.appendChild(fieldValueSpan);
@@ -863,6 +902,16 @@
         }
         // --- END NEW HELPER FUNCTION ---
 
+        // --- NEW HELPER: Check if a string is a valid URL --- 
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return string.startsWith('http://') || string.startsWith('https://');
+            } catch (_) {
+                return false;  
+            }
+        }
+        // --- END NEW HELPER ---
 
         function handleRowHover(event) {
             const targetRow = event.target.closest('tr');
