@@ -15,7 +15,7 @@
             --header-color: #FFA500;
             --label-color: #FFFF00;
             --link-color: #00FFFF;
-            --border-color: #333333;
+            --border-color: #555555; /* Increased contrast */
             --border-color-light: #222;
             --bg-color-dark: #0d0d0d;
             --bg-color-medium: #1a1a1a;
@@ -24,7 +24,7 @@
             --scrollbar-thumb: #555;
             --highlight-bg-color: #FFFF00; /* Yellow background */
             --highlight-text-color: #000000; /* Black text */
-            --star-color: #dc322f; /* Solarized Red */
+            --star-color: #FFBF00; /* Gold */
             --star-color-inactive: var(--text-color-secondary);
         }
 
@@ -36,7 +36,7 @@
             --header-color: #cb4b16; /* Orange */
             --label-color: #b58900; /* Yellow */
             --link-color: #2aa198; /* Cyan */
-            --border-color: #073642;
+            --border-color: #586e75; /* Increased contrast (Base1) */
             --border-color-light: #073642; 
             --bg-color-dark: #073642;
             --bg-color-medium: #002b36;
@@ -45,7 +45,7 @@
             --scrollbar-thumb: #586e75;
             --highlight-bg-color: #b58900; /* Solarized Yellow background */
             --highlight-text-color: #002b36; /* Solarized Base background for text */
-            --star-color: #dc322f; /* Solarized Red */
+            --star-color: #b58900; /* Solarized Yellow */
             --star-color-inactive: var(--text-color-secondary);
         }
 
@@ -57,7 +57,7 @@
             --header-color: #cb4b16; /* Orange */
             --label-color: #b58900; /* Yellow */
             --link-color: #2aa198; /* Cyan */
-            --border-color: #eee8d5;
+            --border-color: #93a1a1; /* Increased contrast (Base1) */
             --border-color-light: #eee8d5;
             --bg-color-dark: #eee8d5;
             --bg-color-medium: #fdf6e3;
@@ -66,7 +66,7 @@
             --scrollbar-thumb: #93a1a1;
             --highlight-bg-color: #b58900; /* Solarized Yellow background */
             --highlight-text-color: #fdf6e3; /* Solarized Base background for text */
-            --star-color: #dc322f; /* Solarized Red */
+            --star-color: #b58900; /* Solarized Yellow */
             --star-color-inactive: var(--text-color-secondary);
         }
         /* --- End Theme Variables --- */
@@ -317,6 +317,17 @@
                 margin-top: 10px;
                 max-height: 40vh;
             }
+        }
+
+        /* Horizontal Rule Style */
+        hr {
+            border: none; /* Remove default borders */
+            border-top: 1px solid var(--border-color);
+            margin: 10px 0; /* Add some vertical space */
+        }
+
+        h1, h2, h3 {
+            color: var(--header-color);
         }
     </style>
 </head>
