@@ -5,14 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NYC Therapist Finder</title>
     <style>
+        /* --- Theme Variables --- */
+        :root,
+        body[data-theme="bloomberg"] {
+            --bg-color: #000000;
+            --text-color: #00FF00;
+            --text-color-secondary: #aaa;
+            --text-color-tertiary: #ccc;
+            --header-color: #FFA500;
+            --label-color: #FFFF00;
+            --link-color: #00FFFF;
+            --border-color: #333333;
+            --border-color-light: #222;
+            --bg-color-dark: #0d0d0d;
+            --bg-color-medium: #1a1a1a;
+            --hover-bg-color: #2a2a2a;
+            --scrollbar-bg: #1a1a1a;
+            --scrollbar-thumb: #555;
+        }
+
+        body[data-theme="solarized-dark"] {
+            --bg-color: #002b36; 
+            --text-color: #839496; 
+            --text-color-secondary: #586e75; 
+            --text-color-tertiary: #657b83; 
+            --header-color: #cb4b16; /* Orange */
+            --label-color: #b58900; /* Yellow */
+            --link-color: #2aa198; /* Cyan */
+            --border-color: #073642;
+            --border-color-light: #073642; 
+            --bg-color-dark: #073642;
+            --bg-color-medium: #002b36;
+            --hover-bg-color: #073642;
+            --scrollbar-bg: #073642;
+            --scrollbar-thumb: #586e75;
+        }
+
+        body[data-theme="solarized-light"] {
+            --bg-color: #fdf6e3;
+            --text-color: #657b83;
+            --text-color-secondary: #93a1a1;
+            --text-color-tertiary: #839496;
+            --header-color: #cb4b16; /* Orange */
+            --label-color: #b58900; /* Yellow */
+            --link-color: #2aa198; /* Cyan */
+            --border-color: #eee8d5;
+            --border-color-light: #eee8d5;
+            --bg-color-dark: #eee8d5;
+            --bg-color-medium: #fdf6e3;
+            --hover-bg-color: #eee8d5;
+            --scrollbar-bg: #eee8d5;
+            --scrollbar-thumb: #93a1a1;
+        }
+        /* --- End Theme Variables --- */
+
+        /* Apply Variables */
         body {
-            background-color: #000000;
-            color: #00FF00; /* Bright green text */
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             margin: 0;
             padding: 10px;
         }
+        /* Apply variables to scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--label-color); /* Highlight on hover */
+        }
+
         .controls {
             display: flex;
             gap: 15px;
@@ -21,33 +92,33 @@
             flex-wrap: wrap;
         }
         .controls label {
-            color: #FFFF00; /* Yellow labels */
+            color: var(--label-color);
         }
         .controls input[type="text"],
         .controls select {
-            background-color: #1a1a1a;
-            color: #00FF00;
-            border: 1px solid #333333;
+            background-color: var(--bg-color-medium);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             padding: 5px;
             font-family: inherit;
             font-size: inherit;
         }
         .controls input[type="text"]::placeholder {
-            color: #555555;
+            color: var(--text-color-secondary);
         }
         #dataTableContainer {
             flex: 3; /* Takes up 3 parts of space */
             overflow: auto; /* Scrollbars for both x and y */
-            border: 1px solid #333333;
+            border: 1px solid var(--border-color);
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid #333333;
+            border: 1px solid var(--border-color);
             font-size: 12px; /* Smaller font for higher density */
         }
         th, td {
-            border: 1px solid #333333;
+            border: 1px solid var(--border-color);
             padding: 4px 6px;
             text-align: left;
             white-space: nowrap; /* Prevent text wrapping */
@@ -56,33 +127,33 @@
             max-width: 200px; /* Limit max width of columns */
         }
         th {
-            background-color: #1a1a1a;
-            color: #FFA500; /* Orange headers */
+            background-color: var(--bg-color-medium);
+            color: var(--header-color);
             position: sticky;
             top: 0;
             z-index: 1;
         }
         tbody tr:nth-child(even) {
-            background-color: #0d0d0d;
+            background-color: var(--bg-color-dark);
         }
         tbody tr:hover,
         tbody tr.highlighted-row {
-            background-color: #2a2a2a;
+            background-color: var(--hover-bg-color);
             cursor: default; /* Indicate hover/selection */
         }
         td a {
-             color: #00FFFF; /* Cyan links */
+             color: var(--link-color);
              text-decoration: none;
         }
         td a:hover {
              text-decoration: underline;
         }
         #status {
-            color: #FF0000; /* Red status messages */
+            color: var(--header-color); /* Use header color for status/errors */
             margin-top: 10px;
         }
         #loading {
-            color: #FFFF00; /* Yellow loading message */
+            color: var(--label-color);
         }
 
         /* New layout styles */
@@ -94,39 +165,35 @@
         }
         #previewPane {
             flex: 1; /* Takes up 1 part of space */
-            border: 1px solid #333333;
+            border: 1px solid var(--border-color);
             padding: 10px;
             overflow-y: auto; /* Only vertical scroll */
-            background-color: #0d0d0d;
+            background-color: var(--bg-color-dark);
             font-size: 11px; /* Even smaller for density */
         }
         #previewPane h3 {
-            color: #FFA500; /* Orange header */
+            color: var(--header-color);
             margin-top: 0;
-            margin-bottom: 5px; /* Reduced margin */
+            margin-bottom: 2px; /* Reduced margin */
             font-size: 13px;
-            border-bottom: 1px solid #333333;
-            padding-bottom: 5px;
-            text-align: center; /* Center header text */
+            padding-bottom: 0;
         }
         #previewPane .preview-degrees {
             font-size: 10px;
-            color: #aaa; /* Dimmer color for degrees */
-            text-align: center;
-            margin-bottom: 15px;
+            color: var(--text-color-tertiary);
+            margin-bottom: 5px;
         }
         #previewPane .preview-short-desc {
             font-size: 10px;
-            color: #ccc; /* Slightly brighter than degrees */
-            text-align: left; /* Align left for readability */
+            color: var(--text-color-tertiary);
             margin-bottom: 15px;
-            padding: 5px;
-            border-top: 1px dotted #222;
-            border-bottom: 1px dotted #222;
+            padding-bottom: 10px;
+            padding-top: 5px;
+            border-bottom: 1px dotted var(--border-color-light);
             white-space: normal; /* Allow wrapping */
         }
         #previewPane strong.field-key {
-            color: #FFFF00; /* Yellow keys */
+            color: var(--label-color);
             display: block; /* Key on its own line */
             margin-bottom: 3px;
             font-size: 11px;
@@ -135,11 +202,33 @@
             display: block; /* Value below key */
             padding-left: 5px; /* Indent value slightly */
             font-size: 10px;
-            color: #00FF00; /* Green value text */
+            color: var(--text-color);
             word-wrap: break-word; /* Wrap long values */
         }
         #previewPane .field-value a {
-            color: #00FFFF; /* Ensure links keep their color */
+           color: var(--link-color);
+        }
+
+        /* Theme Picker Styles */
+        #themePicker {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .theme-square {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.1s ease-in-out;
+        }
+        .theme-square:hover {
+             transform: scale(1.1);
+        }
+        .theme-square.active {
+            border: 2px solid var(--link-color); /* Highlight active theme */
         }
 
         /* Responsive stacking for smaller screens */
@@ -163,6 +252,13 @@
     </style>
 </head>
 <body>
+
+    <!-- Theme Picker -->
+    <div id="themePicker">
+        <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
+        <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
+        <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
+    </div>
 
     <h1>NYC Therapist Finder</h1>
 
@@ -218,6 +314,7 @@
         const loadingDiv = document.getElementById('loading');
         const rowCountSpan = document.getElementById('rowCount');
         const previewContentDiv = document.getElementById('previewContent');
+        const themePicker = document.getElementById('themePicker'); // Get theme picker container
 
         let allData = [];
         let headers = [];
@@ -467,6 +564,36 @@
                 loadingDiv.style.display = 'none';
             }
         }
+
+        // --- Theme Switching Logic ---
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('therapistFinderTheme', theme);
+
+            // Update active class on picker
+            const squares = themePicker.querySelectorAll('.theme-square');
+            squares.forEach(square => {
+                if (square.dataset.setTheme === theme) {
+                    square.classList.add('active');
+                } else {
+                    square.classList.remove('active');
+                }
+            });
+        }
+
+        themePicker.addEventListener('click', (event) => {
+            if (event.target.classList.contains('theme-square')) {
+                const theme = event.target.dataset.setTheme;
+                if (theme) {
+                    applyTheme(theme);
+                }
+            }
+        });
+
+        // Load saved theme on startup
+        const savedTheme = localStorage.getItem('therapistFinderTheme') || 'bloomberg'; // Default to bloomberg
+        applyTheme(savedTheme);
+        // --- End Theme Switching Logic ---
 
         // Initial load triggered automatically
         loadAndDisplayData();
