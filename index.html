@@ -717,29 +717,78 @@
             // --- End Header --- 
 
             // --- Create Fields --- 
-            headers.forEach(header => {
-                // Skip fields already shown in header
-                if (header === 'name' || header === 'degrees' || header === 'image_url' || header === 'all_short_descriptions_text') {
-                    return; 
+            headers.forEach((key, index) => {
+                const value = therapist[key] !== undefined ? therapist[key] : 'N/A';
+                // Skip image URL, originalIndex, the HTML descriptions, and empty values
+                if (key === 'image_url' || key === 'originalIndex' || key === 'all_short_descriptions_html' || !value) return; 
+
+                let displayValue = value; // Start with the original value
+
+                // --- Clean up specific fields before displaying ---
+                const keyLower = key.toLowerCase(); // For case-insensitive matching if needed
+                switch (key) {
+                    case 'Fees':
+                        displayValue = displayValue.replace(/^Fees\s*/i, '').trim();
+                        break;
+                    case 'Payment Methods':
+                        displayValue = displayValue.replace(/^Payment Methods\s*/i, '').trim();
+                        break;
+                    case 'Insurance Accepted':
+                         // Careful: Might remove 'Insurance' if it's a company name. Check data format.
+                         // Assuming it's always a prefix like "Insurance: XYZ". Remove only if prefix.
+                        if (displayValue.toLowerCase().startsWith('insurance ')) {
+                            displayValue = displayValue.substring(10).trim(); // Remove 'Insurance '
+                        }
+                        break;
+                    case 'Education Years In Practice':
+                         // This looks like it removes the whole value? Let's assume it's a prefix.
+                        displayValue = displayValue.replace(/^Education and Years In Practice\s*/i, '').trim();
+                        break;
+                    case 'Additional Credentials':
+                        displayValue = displayValue.replace(/^Additional Credentials\s*/i, '').trim();
+                        break;
+                    case 'Top Specialties':
+                        displayValue = displayValue.replace(/^Top Specialties\s*/i, '').trim();
+                        break;
+                    case 'Expertise':
+                        displayValue = displayValue.replace(/^Expertise\s*/i, '').trim();
+                        break;
+                    case 'Client Focus Age':
+                        displayValue = displayValue.replace(/\s+age$/i, '').trim();
+                        break;
+                    case 'Client Focus Participants':
+                        displayValue = displayValue.replace(/\s+participants$/i, '').trim();
+                        break;
+                    case 'Locations and Primary Location':
+                        displayValue = displayValue.replace(/^Primary Location:\s*/i, '').trim();
+                        break;
+                    case 'Additional Location':
+                        displayValue = displayValue.replace(/^Additional Location:\s*/i, '').trim();
+                        break;
+                    case 'Nearby Areas':
+                         displayValue = displayValue.replace(/\s+cities$/i, '').trim();
+                         break;
+                    // Add more cases here if needed
                 }
+                // --- End field clean up ---
 
-                const value = therapist[header] !== undefined ? therapist[header] : 'N/A';
-                if (value && value !== 'N/A') { // Only show fields with values
-                    const fieldBlock = document.createElement('div');
-                    fieldBlock.className = 'field-block';
+                if (!displayValue) return; // Skip if cleaning resulted in empty value
 
-                    const strong = document.createElement('strong');
-                    strong.className = 'field-key';
-                    // No need to highlight keys, usually?
-                    strong.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
-                    fieldBlock.appendChild(strong);
+                const fieldBlock = document.createElement('div');
+                fieldBlock.classList.add('field-block');
 
-                    const span = document.createElement('span');
-                    span.className = 'field-value';
-                    span.innerHTML = highlightText(value, currentSearchTerm);
-                    fieldBlock.appendChild(span);
-                    previewContentDiv.appendChild(fieldBlock);
-                }
+                const fieldKeySpan = document.createElement('span');
+                fieldKeySpan.classList.add('field-key');
+                fieldKeySpan.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
+
+                const fieldValueSpan = document.createElement('span');
+                fieldValueSpan.classList.add('field-value');
+                // Use the potentially cleaned displayValue
+                fieldValueSpan.innerHTML = highlightText(displayValue, currentSearchTerm || '');
+
+                fieldBlock.appendChild(fieldKeySpan);
+                fieldBlock.appendChild(fieldValueSpan);
+                previewContentDiv.appendChild(fieldBlock);
             });
             // --- End Fields --- 
 
