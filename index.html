@@ -258,11 +258,10 @@
 
         /* Theme Picker Styles */
         #themePicker {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             display: flex;
             gap: 5px;
+            margin-bottom: 10px; /* Add spacing below */
+            justify-content: flex-end; /* Align to the right */
         }
         .theme-square {
             width: 20px;
@@ -320,14 +319,14 @@
 </head>
 <body>
 
+    <h1>NYC Therapist Finder</h1>
+
     <!-- Theme Picker -->
     <div id="themePicker">
         <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
         <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
         <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
     </div>
-
-    <h1>NYC Therapist Finder</h1>
 
     <div class="controls">
         <label for="searchInput">Search:</label>
