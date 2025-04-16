@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NYC Therapist Finder</title>
+    <!-- Google Font Embed for IBM Plex Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         /* --- Theme Variables --- */
         :root,
@@ -26,6 +31,7 @@
             --highlight-text-color: #000000; /* Black text */
             --star-color: #FFBF00; /* Gold */
             --star-color-inactive: var(--text-color-secondary);
+            --font-family-monospace: 'IBM Plex Mono', monospace; /* ADD FONT VARIABLE */
         }
 
         body[data-theme="solarized-dark"] {
@@ -47,6 +53,7 @@
             --highlight-text-color: #002b36; /* Solarized Base background for text */
             --star-color: #b58900; /* Solarized Yellow */
             --star-color-inactive: var(--text-color-secondary);
+            --font-family-monospace: 'IBM Plex Mono', monospace; /* ADD FONT VARIABLE */
         }
 
         body[data-theme="solarized-light"] {
@@ -68,6 +75,7 @@
             --highlight-text-color: #fdf6e3; /* Solarized Base background for text */
             --star-color: #b58900; /* Solarized Yellow */
             --star-color-inactive: var(--text-color-secondary);
+            --font-family-monospace: 'IBM Plex Mono', monospace; /* ADD FONT VARIABLE */
         }
         /* --- End Theme Variables --- */
 
@@ -75,7 +83,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: var(--font-family-monospace); /* USE VARIABLE */
             font-size: 14px;
             margin: 0;
             padding: 10px;
