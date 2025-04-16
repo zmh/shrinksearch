@@ -496,44 +496,47 @@
                 allData = await response.json();
 
                 if (!Array.isArray(allData) || allData.length === 0) {
-                    throw new Error('Failed to parse JSON, JSON is empty, or not an array.');
+                    throw new Error('Data is not an array or is empty.');
                 }
 
-                // --- Add originalIndex to each item --- 
-                allData.forEach((item, index) => {
-                    item.originalIndex = index;
-                });
-                // -------------------------------------
+                // Enrich data with original index for stable sorting/linking
+                allData = allData.map((item, index) => ({ ...item, originalIndex: index }));
 
-                // Determine headers from the keys of the first object
-                headers = Object.keys(allData[0]);
+                // Determine headers from the first item, excluding specific internal/undesired columns
+                if (allData.length > 0) {
+                    const columnsToHide = new Set([
+                        'short_participants', // Corrected: underscore
+                        'short_fees',         // Corrected: underscore
+                        'short_specialties',  // Corrected: underscore
+                        'all_short_descriptions_html',
+                        'originalindex', // Use lowercase for comparison
+                        'image_url'
+                    ]);
+                    headers = Object.keys(allData[0]).filter(header => 
+                        !columnsToHide.has(header.toLowerCase())
+                    );
+                }
 
-                // Populate table headers
-                const tr = document.createElement('tr');
-                headers.forEach(header => {
-                    const th = document.createElement('th');
-                    th.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
-                    tr.appendChild(th);
-                });
-                tableHead.appendChild(tr);
-
-                 // Add Fav column header
-                 const favTh = document.createElement('th');
-                 favTh.textContent = 'Fav';
-                 tr.insertBefore(favTh, tr.firstChild); // Add to the beginning
-
-                // Initial render
+                // Initial data display
                 displayData();
 
-                // Create a debounced version of filterData
-                const debouncedDisplayData = debounce(displayData, 300); // 300ms delay
+                // Create a debounced version for search input
+                const debouncedDisplayData = debounce(displayData, 300); 
 
-                // Add event listeners for controls (only once after data load)
-                searchInput.removeEventListener('input', debouncedDisplayData); // Use debounced version
-                searchInput.addEventListener('input', debouncedDisplayData); // Use debounced version
-                newClientsSelect.removeEventListener('change', displayData); // Filter doesn't need debounce
-                newClientsSelect.addEventListener('change', displayData); // Filter doesn't need debounce
+                // Search Input Listener
+                searchInput.removeEventListener('input', debouncedDisplayData); 
+                searchInput.addEventListener('input', debouncedDisplayData);
 
+                // New Clients Filter Listener
+                newClientsSelect.removeEventListener('change', displayData); 
+                newClientsSelect.addEventListener('change', displayData);
+
+                // Favorites Filter Button Listener
+                document.getElementById('favoritesFilterBtn').addEventListener('click', () => {
+                     showOnlyFavorites = !showOnlyFavorites;
+                     updateFavoritesButton(); // Update button style/text
+                     displayData(); // Re-render table with new filter state
+                });
             } catch (error) {
                 console.error('Error loading or processing data:', error);
                 statusDiv.textContent = `Error: ${error.message}. Please ensure '${jsonDataUrl}' is in the same directory, accessible by the server, and is valid JSON.`;
@@ -754,9 +757,9 @@
                 if (keyLower === 'image_url' || 
                     keyLower === 'originalindex' || 
                     keyLower === 'all_short_descriptions_html' || 
-                    keyLower === 'short participants' ||
-                    keyLower === 'short fees' ||
-                    keyLower === 'short specialties' ||
+                    keyLower === 'short_participants' ||
+                    keyLower === 'short_fees' ||
+                    keyLower === 'short_specialties' ||
                     !value) return; 
 
                 let displayValue = value; // Start with the original value
@@ -847,7 +850,7 @@
             star.classList.toggle('is-favorite', isFav);
             // Remove redundant onclick handler - it's set when the star is created in updatePreview
             /* star.onclick = (e) => { 
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent triggering row hover/click
                 toggleFavorite(originalIndex);
             }; */
         }
