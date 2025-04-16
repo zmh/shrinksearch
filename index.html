@@ -470,7 +470,7 @@
                     th.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
                     tr.appendChild(th);
                 });
-                thead.appendChild(tr);
+                tableHead.appendChild(tr);
 
                  // Add Fav column header
                  const favTh = document.createElement('th');
@@ -500,9 +500,8 @@
         // --- Display Logic --- 
         function displayData() {
             const tbody = document.getElementById('therapistTable').querySelector('tbody');
-            const thead = document.getElementById('therapistTable').querySelector('thead');
             tbody.innerHTML = ''; // Clear existing rows
-            thead.innerHTML = ''; // Clear existing header
+            tableHead.innerHTML = ''; // Clear existing header
             rowCountSpan.textContent = '0';
             clearPreview();
 
@@ -565,7 +564,7 @@
                 th.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Format header
                 tr.appendChild(th);
             });
-            thead.appendChild(tr);
+            tableHead.appendChild(tr);
 
              // Add Fav column header
              const favTh = document.createElement('th');
