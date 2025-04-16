@@ -650,24 +650,33 @@
                 headers.forEach(header => {
                     const td = document.createElement('td');
                     const value = item[header] !== undefined ? item[header] : '';
-                     // Apply highlighting only if we are NOT showing just favorites (search term relevant)
-                    const displayValue = !showOnlyFavorites ? highlightText(value, currentSearchTerm) : value;
+                    // Check if the current cell is for the 'Name' column to add star
+                    if (header === 'name') {
+                        // Create star span
+                        const starSpan = document.createElement('span');
+                        starSpan.classList.add('star');
+                        const isFav = isFavorite(item.originalIndex);
+                        starSpan.innerHTML = isFav ? '★' : '☆'; 
+                        starSpan.classList.toggle('is-favorite', isFav);
+                        starSpan.onclick = (e) => { 
+                            e.stopPropagation(); // Prevent row hover/click handlers
+                            toggleFavorite(item.originalIndex);
+                        };
+                        td.appendChild(starSpan);
+                        td.appendChild(document.createTextNode('\u00A0')); // Add space
 
-                    if (header === 'website' && value) {
-                        const link = document.createElement('a');
-                        link.href = value.startsWith('http') ? value : 'http://' + value;
-                        link.textContent = value;
-                        link.target = '_blank'; // Open in new tab
-                        td.appendChild(link);
-                    } else if (header === 'phone' && value) {
-                        const link = document.createElement('a');
-                        link.href = `tel:${value.replace(/\D/g,'')}`; // Create tel link, remove non-digits
-                        link.textContent = value;
-                        td.appendChild(link);
+                        // Add name text
+                        const textSpan = document.createElement('span');
+                        textSpan.innerHTML = highlightText(value, currentSearchTerm);
+                        td.appendChild(textSpan);
                     } else {
-                        td.textContent = displayValue;
-                        td.title = value; // Show full text on hover
+                        // --- Clean the value before displaying and highlighting ---
+                        const cleanedValue = cleanDisplayValue(header, value); // <-- USE HELPER
+                        td.innerHTML = highlightText(cleanedValue, currentSearchTerm); // <-- USE CLEANED VALUE
+                        // --- End cleaning modification ---
                     }
+
+                    // Apply compact styling
                     rowTr.appendChild(td);
                 });
                 tbody.appendChild(rowTr);
@@ -768,57 +777,9 @@
                     keyLower === 'short_specialties' ||
                     !value) return; 
 
-                let displayValue = value; // Start with the original value
-
-                // --- Clean up specific fields before displaying ---
-                switch (keyLower) { // Switch on the lowercased key
-                    case 'fees': // Lowercase
-                        displayValue = displayValue.replace(/^\s*fees\s*/i, '').trim();
-                        break;
-                    case 'payment_methods': // Lowercase
-                        displayValue = displayValue.replace(/^\s*payment methods\s*/i, '').trim();
-                        break;
-                    case 'insurance_accepted': // Lowercase
-                         // Using more specific regex targeting start + trailing whitespace
-                         displayValue = displayValue.replace(/^\s*insurance\s*/i, '').trim(); 
-                         break;
-                    case 'education_years_in_practice': // Lowercase
-                        displayValue = displayValue.replace(/^\s*education and years in practice\s*/i, '').trim();
-                        break;
-                    case 'additional_credentials': // Lowercase
-                        displayValue = displayValue.replace(/^\s*additional credentials\s*/i, '').trim();
-                        break;
-                    case 'top_specialties': // Lowercase
-                        displayValue = displayValue.replace(/^\s*top specialties\s*/i, '').trim();
-                        break;
-                    case 'expertise': // Lowercase
-                        displayValue = displayValue.replace(/^\s*expertise\s*/i, '').trim(); 
-                        break;
-                    case 'client_focus_age': // Lowercase
-                        // Suffix removal - Keep as is
-                        displayValue = displayValue.replace(/\s+age$/i, '').trim();
-                        break;
-                    case 'client focus participants': // Lowercase
-                         // Suffix removal - Keep as is
-                        displayValue = displayValue.replace(/\s+participants$/i, '').trim();
-                        break;
-                    case 'locations and primary location': // Lowercase
-                         // Prefix removal
-                         displayValue = displayValue.replace(/^\s*locations and primary location\s*/i, '').trim();
-                         // Fallback needed?
-                         if (value === displayValue) {
-                            displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
-                         }
-                         break;
-                    // Add case for 'locations' if needed based on data inspection
-                    /* case 'locations':
-{{ ... }}
-                        break; */
-                    // Add more cases as needed
-                    default:
-                        // No specific cleanup for this key
-                        break;
-                }
+                // --- CALL THE NEW CLEANING FUNCTION --- 
+                let displayValue = cleanDisplayValue(key, value);
+                // --- END CALL --- 
 
                 // After cleanup, check if the value is now empty; if so, skip
                 if (!displayValue) return;
@@ -878,6 +839,58 @@
                 }
             }
         }
+
+        // --- NEW HELPER FUNCTION for cleaning values ---
+        function cleanDisplayValue(key, value) {
+            if (!value) return ''; // Return empty if no value
+
+            let displayValue = String(value); // Ensure it's a string
+            const keyLower = key.toLowerCase(); 
+
+            // --- Clean up specific fields before displaying ---
+            switch (keyLower) { // Switch on the lowercased key
+                case 'fees': 
+                    displayValue = displayValue.replace(/^\s*fees\s*/i, '').trim();
+                    break;
+                case 'payment_methods': 
+                    displayValue = displayValue.replace(/^\s*payment methods\s*/i, '').trim();
+                    break;
+                case 'insurance_accepted': 
+                     displayValue = displayValue.replace(/^\s*insurance\s*/i, '').trim(); 
+                     break;
+                case 'education_years_in_practice': 
+                    displayValue = displayValue.replace(/^\s*education and years in practice\s*/i, '').trim();
+                    break;
+                case 'additional_credentials': 
+                    displayValue = displayValue.replace(/^\s*additional credentials\s*/i, '').trim();
+                    break;
+                case 'top_specialties': 
+                    displayValue = displayValue.replace(/^\s*top specialties\s*/i, '').trim();
+                    break;
+                case 'expertise': 
+                    displayValue = displayValue.replace(/^\s*expertise\s*/i, '').trim(); 
+                    break;
+                case 'client_focus_age': 
+                    displayValue = displayValue.replace(/\s+age$/i, '').trim();
+                    break;
+                case 'client_focus_participants': 
+                    displayValue = displayValue.replace(/\s+participants$/i, '').trim();
+                    break;
+                case 'locations_and_primary_location': // Check JSON key
+                     displayValue = displayValue.replace(/^\s*locations and primary location\s*/i, '').trim();
+                     if (String(value) === displayValue) { // Check if replace did nothing
+                        displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
+                     }
+                     break;
+                // Add more cases if needed
+                default:
+                    // No specific cleanup for this key
+                    break;
+            }
+            return displayValue;
+        }
+        // --- END NEW HELPER FUNCTION ---
+
 
         function handleRowHover(event) {
             const targetRow = event.target.closest('tr');
