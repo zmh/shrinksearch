@@ -342,7 +342,7 @@
 
         <button id="favoritesFilterBtn">Favorites (0)</button> <!-- Favorites Button -->
 
-        <span id="rowCountStatus" style="margin-left: auto;">Rows: <span id="rowCount">0</span></span>
+        <span id="rowCountStatus" style="margin-left: auto;"></span>
     </div>
 
     <div id="status"></div>
@@ -376,9 +376,9 @@
         const newClientsSelect = document.getElementById('newClientsSelect');
         const statusDiv = document.getElementById('status');
         const loadingDiv = document.getElementById('loading');
-        const rowCountSpan = document.getElementById('rowCount');
+        const rowCountStatusSpan = document.getElementById('rowCountStatus'); // Changed ID
         const previewContentDiv = document.getElementById('previewContent');
-        const themePicker = document.getElementById('themePicker'); // Get theme picker container
+        const themePicker = document.getElementById('themePicker'); // Get theme picker
 
         let allData = [];
         let headers = [];
@@ -478,6 +478,12 @@
                     throw new Error('Failed to parse JSON, JSON is empty, or not an array.');
                 }
 
+                // --- Add originalIndex to each item --- 
+                allData.forEach((item, index) => {
+                    item.originalIndex = index;
+                });
+                // -------------------------------------
+
                 // Determine headers from the keys of the first object
                 headers = Object.keys(allData[0]);
 
@@ -520,7 +526,7 @@
             const tbody = document.getElementById('therapistTable').querySelector('tbody');
             tbody.innerHTML = ''; // Clear existing rows
             tableHead.innerHTML = ''; // Clear existing header
-            rowCountSpan.textContent = '0';
+            rowCountStatusSpan.textContent = ''; // Clear status span
             clearPreview();
 
             if (!allData || allData.length === 0) {
@@ -637,7 +643,7 @@
                 tbody.appendChild(rowTr);
             });
 
-            rowCountSpan.textContent = dataToDisplay.length;
+            rowCountStatusSpan.textContent = `Showing ${dataToDisplay.length} of ${allData.length} therapists`;
         }
 
         // --- New functions for preview --- 
