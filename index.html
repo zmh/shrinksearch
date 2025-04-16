@@ -80,37 +80,90 @@
         /* --- End Theme Variables --- */
 
         /* Apply Variables */
+        html {
+            height: 100%; /* Ensure html takes full height */
+            box-sizing: border-box;
+        }
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
         body {
+            font-family: var(--font-family-monospace); /* USE VARIABLE */
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: var(--font-family-monospace); /* USE VARIABLE */
-            font-size: 14px;
             margin: 0;
-            padding: 10px;
+            padding: 0;
+            height: 100vh; /* Full viewport height */
+            display: flex; /* Use flexbox for overall layout */
+            flex-direction: column; /* Stack controls and main content vertically */
+            overflow: hidden; /* Prevent body scrolling */
         }
-        /* Apply variables to scrollbar */
+
+        /* Styles for scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: var(--scrollbar-bg);
+            background: var(--bg-color-dark);
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--scrollbar-thumb);
+            background-color: var(--border-color);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--label-color); /* Highlight on hover */
+             background: var(--label-color);
         }
 
-        .controls {
-            display: flex;
+        /* --- Layout Containers --- */
+        #top-container { /* NEW */
+            flex-shrink: 0; /* Prevent this section from shrinking */
+            padding: 10px;  /* Add padding here */
+            border-bottom: 1px solid var(--border-color); /* Move border here */
+        }
+
+        .controls { /* Assuming class for search/filter area */
+            /* Remove other flex properties if they existed */
+            display: flex; /* Keep inner items flex */
             gap: 15px;
-            margin-bottom: 10px;
             align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 5px; /* Optional space below controls */
         }
+
+        #mainContent { /* Container for table + preview */
+            display: flex;
+            flex-grow: 1; /* Take remaining vertical space */
+            padding: 10px;
+            gap: 10px;
+            overflow: hidden; /* VERY IMPORTANT: Prevent this container from scrolling */
+        }
+
+        #dataTableContainer { /* Table container */
+            flex-grow: 1; /* Table container takes available horizontal space */
+            overflow: auto; /* Allow both horizontal and vertical scroll if table is wide/long */
+            border: 1px solid var(--border-color);
+            position: relative; /* For sticky header */
+            /* REMOVE explicit height if it exists */
+        }
+
+        #previewPane { /* Preview pane */
+            width: 350px; /* Fixed width */
+            flex-shrink: 0; /* Prevent preview from shrinking */
+            overflow-y: auto; /* Allow vertical scroll *within* the preview */
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            background-color: var(--bg-color-dark);
+            font-size: 11px;
+            position: relative;
+            /* REMOVE flex-grow or flex: 1 if it exists */
+        }
+        /* --- End Layout Containers --- */
+
+        /* Control elements styling */
         .controls label {
             color: var(--label-color);
         }
@@ -126,48 +179,56 @@
         .controls input[type="text"]::placeholder {
             color: var(--text-color-secondary);
         }
-        #dataTableContainer {
-            flex: 3; /* Takes up 3 parts of space */
-            overflow: auto; /* Scrollbars for both x and y */
-            border: 1px solid var(--border-color);
-        }
+
+        /* Table styling */
         table {
             width: 100%;
             border-collapse: collapse;
-            border: 1px solid var(--border-color);
-            font-size: 12px; /* Smaller font for higher density */
+            table-layout: fixed; /* Prevents columns from resizing based on content */
         }
+
         th, td {
             border: 1px solid var(--border-color);
-            padding: 4px 6px;
+            padding: 4px 8px;
             text-align: left;
-            white-space: nowrap; /* Prevent text wrapping */
+            font-size: 12px; /* Density */
+            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Add ellipsis for overflow */
-            max-width: 200px; /* Limit max width of columns */
+            text-overflow: ellipsis;
         }
+
         th {
             background-color: var(--bg-color-medium);
             color: var(--header-color);
             position: sticky;
             top: 0;
-            z-index: 1;
+            z-index: 10; /* Ensure header stays above scrolling content */
         }
+
         tbody tr:nth-child(even) {
             background-color: var(--bg-color-dark);
         }
-        tbody tr:hover,
-        tbody tr.highlighted-row {
+
+        tbody tr:hover {
             background-color: var(--hover-bg-color);
-            cursor: default; /* Indicate hover/selection */
+            cursor: pointer;
         }
+
+        tbody tr.highlighted-row { /* Ensure this class is used for highlighting */
+            background-color: var(--highlight-bg-color);
+            color: var(--highlight-text-color);
+        }
+
         td a {
-             color: var(--link-color);
-             text-decoration: none;
-        }
-        td a:hover {
-             text-decoration: underline;
-        }
+              color: var(--link-color);
+              text-decoration: none;
+         }
+
+         td a:hover {
+              text-decoration: underline;
+         }
+
+        /* Status and Loading messages */
         #status {
             color: var(--header-color); /* Use header color for status/errors */
             margin-top: 10px;
@@ -176,103 +237,85 @@
             color: var(--label-color);
         }
 
-        /* New layout styles */
-        #mainContent {
-            display: flex;
-            gap: 10px;
-            /* Calculate height minus controls/header - adjust as needed */
-            height: calc(100vh - 120px);
-        }
-        #previewPane {
-            flex: 1; /* Takes up 1 part of space */
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            overflow-y: auto; /* Only vertical scroll */
-            background-color: var(--bg-color-dark);
-            font-size: 11px; /* Even smaller for density */
-            position: relative; /* <<< Add for absolute positioning context */
-        }
+        /* Preview Pane specific content styling */
         #previewPane h3 {
             color: var(--header-color);
             margin-top: 0;
-            margin-bottom: 1px; /* Further reduced margin */
+            margin-bottom: 5px; /* Space below name */
             font-size: 13px;
             padding-bottom: 0;
         }
         #previewPane .preview-degrees {
             font-size: 10px;
             color: var(--text-color-tertiary);
-            margin-bottom: 3px; /* Reduced margin */
+            margin-bottom: 10px; /* Space below degrees */
         }
         #previewPane .preview-short-desc {
             font-size: 10px;
             color: var(--text-color-tertiary);
-            margin-bottom: 8px; /* Spacing below text */
-            padding-bottom: 8px; /* Spacing below text before rule */
-            padding-top: 4px; /* Spacing above text */
-            border-bottom: 1px dotted var(--border-color-light); /* Add rule back here */
+            margin-bottom: 10px;
+            padding-bottom: 10px; /* Space below short desc */
+            border-bottom: 1px dotted var(--border-color-light);
             white-space: normal; /* Allow wrapping */
         }
         #previewPane div.field-block {
-            margin-bottom: 6px; /* Reduced space between field blocks */
+            margin-bottom: 6px; /* Space between field blocks */
         }
         #previewPane strong.field-key {
             color: var(--label-color);
             display: block; /* Key on its own line */
-            margin-bottom: 3px;
+            margin-bottom: 2px; /* Space between key and value */
+            font-weight: normal; /* Less emphasis */
             font-size: 11px;
         }
         #previewPane .field-value {
             display: block; /* Value below key */
             font-size: 10px;
-            color: var(--text-color);
+            white-space: normal; /* Allow wrapping */
             word-wrap: break-word; /* Wrap long values */
-            margin-bottom: 2px; /* Small space below value before next key */
+            margin-bottom: 2px; /* Small space below value */
         }
         #previewPane .field-value a {
            color: var(--link-color);
         }
-
-        /* Highlight Style */
-        .search-highlight {
-            background-color: var(--highlight-bg-color);
-            color: var(--highlight-text-color);
-            padding: 0 2px; /* Small padding */
-            border-radius: 2px;
+        #previewPane img.preview-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 3px;
+            margin-bottom: 10px;
         }
 
-        /* Favorite Star Styles */
-        .favorite-star {
+        /* Star styling (shared by table and preview) */
+        .star, .favorite-star {
             cursor: pointer;
-            font-size: 16px; /* Make stars noticeable */
-            color: var(--star-color-inactive);
-            user-select: none; /* Prevent text selection */
-            display: inline-block; /* Ensure proper spacing/alignment */
-            min-width: 1em; /* Ensure consistent width */
+            color: var(--text-color-secondary);
+            font-size: 1.2em; /* Make star slightly larger */
+            display: inline-block;
+            width: 1.2em; /* Ensure consistent width */
             text-align: center;
             transition: color 0.2s, transform 0.1s;
         }
-        .favorite-star:hover {
+        .star:hover, .favorite-star:hover {
             transform: scale(1.2);
         }
-        .favorite-star.is-favorite {
+        .star.is-favorite, .favorite-star.is-favorite {
             color: var(--star-color);
         }
 
-        /* Restore Preview Star CSS */ 
+        /* Preview pane specific star */
         #previewPane .favorite-star {
             position: absolute;
             top: 10px;
             right: 10px;
-            font-size: 20px; 
         }
 
-        /* Theme Picker Styles */
-        #themePicker {
+        /* Theme switcher */
+        .theme-switcher {
             display: flex;
             gap: 5px;
+            margin-left: auto; /* Push switcher to the right */
             margin-bottom: 10px; /* Add spacing below */
-            justify-content: flex-end; /* Align to the right */
+            justify-content: flex-end;
         }
         .theme-square {
             width: 20px;
@@ -288,16 +331,16 @@
             border: 2px solid var(--link-color); /* Highlight active theme */
         }
 
-        /* Style Favorites Button like text */
+        /* Favorites Button */
         #favoritesFilterBtn {
             background: none;
             border: none;
-            padding: 0;
-            margin: 0 10px; /* Match spacing */
-            font: inherit; /* Use body font */
-            color: var(--label-color); /* Use label color */
+            color: var(--link-color);
             cursor: pointer;
-            text-decoration: none; /* Remove underline if any */
+            font-size: inherit;
+            padding: 0;
+            margin-left: 10px;
+            text-decoration: none;
             vertical-align: baseline;
         }
         #favoritesFilterBtn:hover {
@@ -306,6 +349,13 @@
         #favoritesFilterBtn.filter-active { /* Use a class for active state */
              font-weight: bold;
              color: var(--star-color); /* Use star color */
+        }
+
+        /* Utility */
+        mark {
+            background-color: var(--highlight-bg-color);
+            color: var(--highlight-text-color);
+            padding: 0.1em;
         }
 
         /* Responsive stacking for smaller screens */
@@ -341,33 +391,34 @@
 </head>
 <body>
 
-    <h1>NYC Therapist Finder</h1>
+    <div id="top-container"> <!-- NEW WRAPPER -->
+        <h1>NYC Therapist Finder</h1>
 
-    <!-- Theme Picker -->
-    <div id="themePicker">
-        <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
-        <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
-        <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
-    </div>
+        <!-- Theme Picker -->
+        <div id="themePicker">
+            <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
+            <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
+            <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
+        </div>
 
-    <div class="controls">
-        <label for="searchInput">Search:</label>
-        <input type="text" id="searchInput" placeholder="Type to search all fields...">
+        <div class="controls">
+            <label for="searchInput">Search:</label>
+            <input type="text" id="searchInput" placeholder="Type to search all fields...">
 
-        <label for="newClientsSelect">New Clients:</label>
-        <select id="newClientsSelect">
-            <option value="any">Any</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-        </select>
+            <label for="newClientsSelect">New Clients:</label>
+            <select id="newClientsSelect">
+                <option value="any">Any</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
 
-        <button id="favoritesFilterBtn">Favorites (0)</button> <!-- Favorites Button -->
+            <button id="favoritesFilterBtn">Favorites (0)</button> <!-- Favorites Button -->
 
-        <span id="rowCountStatus" style="margin-left: auto;"></span>
-    </div>
-
-    <div id="status"></div>
-    <div id="loading">Loading data...</div> <!-- Visible initially -->
+            <span id="rowCountStatus" style="margin-left: auto;"></span>
+        </div>
+        <div id="status"></div>
+        <div id="loading">Loading data...</div> <!-- Visible initially -->
+    </div> <!-- END WRAPPER #top-container -->
 
     <!-- New main content wrapper -->
     <div id="mainContent">
