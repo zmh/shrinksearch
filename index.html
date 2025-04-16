@@ -871,8 +871,8 @@
                     displayValue = displayValue.replace(/^\s*expertise\s*/i, '').trim(); 
                     break;
                 case 'client_focus_age': 
-                    displayValue = displayValue.replace(/\s+age$/i, '').trim();
-                    break;
+                displayValue = displayValue.replace(/^\s*age\s*/i, '').trim(); 
+                break;
                 case 'client_focus_participants': 
                     displayValue = displayValue.replace(/\s+participants$/i, '').trim();
                     break;
