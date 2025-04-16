@@ -767,54 +767,61 @@
                 // --- Clean up specific fields before displaying ---
                 switch (keyLower) { // Switch on the lowercased key
                     case 'fees': // Lowercase
-                        displayValue = displayValue.replace(/fees/gi, '').trim();
+                        displayValue = displayValue.replace(/^\s*fees\b/i, '').trim();
                         break;
                     case 'payment methods': // Lowercase
-                        displayValue = displayValue.replace(/payment methods/gi, '').trim();
+                        displayValue = displayValue.replace(/^\s*payment methods\b/i, '').trim();
                         break;
                     case 'insurance accepted': // Lowercase
-                         displayValue = displayValue.replace(/insurance/gi, '').trim();
+                         // Using more specific regex targeting start
+                         displayValue = displayValue.replace(/^\s*insurance accepted\b/i, '').trim(); 
+                         // Fallback if 'insurance accepted' not found, try just 'insurance'
+                         if (value === displayValue) { // Check if previous replace did nothing
+                             displayValue = displayValue.replace(/^\s*insurance\b/i, '').trim(); 
+                         }
                          break;
                     case 'education years in practice': // Lowercase
-                        displayValue = displayValue.replace(/education and years in practice/gi, '').trim();
+                        displayValue = displayValue.replace(/^\s*education and years in practice\b/i, '').trim();
                         break;
                     case 'additional credentials': // Lowercase
-                        displayValue = displayValue.replace(/additional credentials/gi, '').trim();
+                        displayValue = displayValue.replace(/^\s*additional credentials\b/i, '').trim();
                         break;
                     case 'top specialties': // Lowercase
-                        displayValue = displayValue.replace(/top specialties/gi, '').trim();
+                        displayValue = displayValue.replace(/^\s*top specialties\b/i, '').trim();
                         break;
                     case 'expertise': // Lowercase
-                        displayValue = displayValue.replace(/expertise/gi, '').trim(); 
+                        displayValue = displayValue.replace(/^\s*expertise\b/i, '').trim(); 
                         break;
                     case 'client focus age': // Lowercase
-                        // Keep suffix removal: Remove ' age' from end
+                        // Suffix removal - Keep as is
                         displayValue = displayValue.replace(/\s+age$/i, '').trim();
                         break;
                     case 'client focus participants': // Lowercase
-                         // Keep suffix removal: Remove ' participants' from end
+                         // Suffix removal - Keep as is
                         displayValue = displayValue.replace(/\s+participants$/i, '').trim();
                         break;
                     case 'locations and primary location': // Lowercase
-                         // Remove 'primary location' globally
-                        displayValue = displayValue.replace(/primary location/gi, '').trim();
-                        break;
-                    case 'additional location': // Lowercase
-                         // Remove 'additional location' globally
-                        displayValue = displayValue.replace(/additional location/gi, '').trim();
-                        break;
-                    case 'nearby areas': // Lowercase
-                         // Keep suffix removal: Remove ' cities' from end
-                         displayValue = displayValue.replace(/\s+cities$/i, '').trim();
+                         // Prefix removal
+                         displayValue = displayValue.replace(/^\s*locations and primary location\b/i, '').trim();
+                         // Fallback for just 'locations' or 'primary location' at start?
+                         // Let's handle 'locations' separately if needed
                          break;
-                    // Add more cases here if needed
+                    // Add case for 'locations' if needed based on data inspection
+                    /* case 'locations':
+                        displayValue = displayValue.replace(/^\s*primary location\b/i, '').trim();
+                        break; */
+                    // Add more cases as needed
+                    default:
+                        // No specific cleanup for this key
+                        break;
                 }
-                // --- End field clean up ---
 
-                if (!displayValue) return; // Skip if cleaning resulted in empty value
+                // After cleanup, check if the value is now empty; if so, skip
+                if (!displayValue) return;
 
-                const fieldBlock = document.createElement('div');
-                fieldBlock.classList.add('field-block');
+                // Create elements for display
+                const fieldDiv = document.createElement('div');
+                fieldDiv.classList.add('field-block');
 
                 const fieldKeyStrong = document.createElement('strong'); 
                 fieldKeyStrong.classList.add('field-key');
@@ -825,9 +832,9 @@
                 // Use the potentially cleaned displayValue
                 fieldValueSpan.innerHTML = highlightText(displayValue, currentSearchTerm || '');
 
-                fieldBlock.appendChild(fieldKeyStrong); 
-                fieldBlock.appendChild(fieldValueSpan);
-                previewContentDiv.appendChild(fieldBlock);
+                fieldDiv.appendChild(fieldKeyStrong); 
+                fieldDiv.appendChild(fieldValueSpan);
+                previewContentDiv.appendChild(fieldDiv);
             });
             // --- End Fields --- 
 
