@@ -530,20 +530,6 @@
                 // Create a debounced version for search input
                 const debouncedDisplayData = debounce(displayData, 300); 
 
-                // Search Input Listener
-                searchInput.removeEventListener('input', debouncedDisplayData); 
-                searchInput.addEventListener('input', debouncedDisplayData);
-
-                // New Clients Filter Listener
-                newClientsSelect.removeEventListener('change', displayData); 
-                newClientsSelect.addEventListener('change', displayData);
-
-                // Favorites Filter Button Listener
-                document.getElementById('favoritesFilterBtn').addEventListener('click', () => {
-                     showOnlyFavorites = !showOnlyFavorites;
-                     updateFavoritesButton(); // Update button style/text
-                     displayData(); // Re-render table with new filter state
-                });
             } catch (error) {
                 console.error('Error loading or processing data:', error);
                 statusDiv.textContent = `Error: ${error.message}. Please ensure '${jsonDataUrl}' is in the same directory, accessible by the server, and is valid JSON.`;
@@ -627,9 +613,9 @@
              tr.insertBefore(favTh, tr.firstChild); // Add to the beginning
 
             // --- Create Table Rows --- 
-            dataToDisplay.forEach((item, index) => {
+            dataToDisplay.forEach((item) => { // Remove unused 'index' parameter
                 const rowTr = document.createElement('tr');
-                rowTr.dataset.index = index; // Store index for toggle logic
+                rowTr.dataset.originalIndex = item.originalIndex; // Use originalIndex consistently
 
                 // Add Fav Star Cell
                 const favTd = document.createElement('td');
@@ -879,7 +865,7 @@
             // Add highlight to current row
             targetRow.classList.add('highlighted-row');
 
-            const originalIndex = parseInt(targetRow.dataset.index, 10);
+            const originalIndex = parseInt(targetRow.dataset.originalIndex, 10); // NEW line using originalIndex
             if (!isNaN(originalIndex)) {
                 updatePreview(originalIndex);
             }
