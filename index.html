@@ -36,8 +36,9 @@
             color: #555555;
         }
         #dataTableContainer {
-            width: 100%;
-            overflow-x: auto; /* Allow horizontal scrolling for the table */
+            flex: 3; /* Takes up 3 parts of space */
+            overflow: auto; /* Scrollbars for both x and y */
+            border: 1px solid #333333;
         }
         table {
             width: 100%;
@@ -64,8 +65,10 @@
         tbody tr:nth-child(even) {
             background-color: #0d0d0d;
         }
-        tbody tr:hover {
+        tbody tr:hover,
+        tbody tr.highlighted-row {
             background-color: #2a2a2a;
+            cursor: default; /* Indicate hover/selection */
         }
         td a {
              color: #00FFFF; /* Cyan links */
@@ -80,6 +83,57 @@
         }
         #loading {
             color: #FFFF00; /* Yellow loading message */
+        }
+
+        /* New layout styles */
+        #mainContent {
+            display: flex;
+            gap: 10px;
+            /* Calculate height minus controls/header - adjust as needed */
+            height: calc(100vh - 120px);
+        }
+        #previewPane {
+            flex: 1; /* Takes up 1 part of space */
+            border: 1px solid #333333;
+            padding: 10px;
+            overflow-y: auto; /* Only vertical scroll */
+            background-color: #0d0d0d;
+            font-size: 11px; /* Even smaller for density */
+        }
+        #previewPane h3 {
+            color: #FFA500; /* Orange header */
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 13px;
+            border-bottom: 1px solid #333333;
+            padding-bottom: 5px;
+        }
+        #previewPane div {
+            margin-bottom: 5px;
+        }
+        #previewPane strong {
+            color: #FFFF00; /* Yellow keys */
+            display: inline-block;
+            min-width: 100px; /* Align values */
+        }
+
+        /* Responsive stacking for smaller screens */
+        @media (max-width: 800px) {
+            #mainContent {
+                flex-direction: column;
+                height: auto; /* Allow content to dictate height */
+            }
+            #dataTableContainer {
+                flex: none; /* Reset flex */
+                width: 100%;
+                max-height: 50vh; /* Limit table height on mobile */
+            }
+            #previewPane {
+                flex: none; /* Reset flex */
+                width: auto; /* Take available width */
+                margin-top: 10px;
+                max-height: 40vh;
+            }
         }
     </style>
 </head>
@@ -105,17 +159,28 @@
     </div>
 
     <div id="status"></div>
-    <div id="loading">Loading data...</div>
+    <div id="loading">Loading data...</div> <!-- Visible initially -->
 
-    <div id="dataTableContainer">
-        <table id="therapistTable">
-            <thead>
-                <!-- Headers will be populated dynamically -->
-            </thead>
-            <tbody>
-                <!-- Data rows will be populated dynamically -->
-            </tbody>
-        </table>
+    <!-- New main content wrapper -->
+    <div id="mainContent">
+        <div id="dataTableContainer"> <!-- Existing table container -->
+            <table id="therapistTable">
+                <thead>
+                    <!-- Headers will be populated dynamically -->
+                </thead>
+                <tbody>
+                    <!-- Data rows will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- New preview pane -->
+        <div id="previewPane">
+             <h3>Details</h3>
+             <div id="previewContent">
+                 <p>Hover over a row in the table to see details here.</p>
+             </div>
+        </div>
     </div>
 
     <script>
@@ -127,12 +192,25 @@
         const statusDiv = document.getElementById('status');
         const loadingDiv = document.getElementById('loading');
         const rowCountSpan = document.getElementById('rowCount');
+        const previewContentDiv = document.getElementById('previewContent');
 
         let allData = [];
         let headers = [];
 
+        // Debounce function
+        function debounce(func, delay) {
+            let timeoutId;
+            return function(...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
         function renderTable(dataToRender) {
             tableBody.innerHTML = ''; // Clear existing rows
+            let currentHighlightedRow = null; // Keep track of highlighted row
 
             if (dataToRender.length === 0) {
                  tableBody.innerHTML = '<tr><td colspan="' + headers.length + '">No matching therapists found.</td></tr>';
@@ -140,9 +218,11 @@
                 return;
             }
 
-            dataToRender.forEach(row => {
+            dataToRender.forEach((row, dataIndex) => { // Get index relative to filtered data
                 const tr = document.createElement('tr');
-                headers.forEach((header, index) => {
+                tr.dataset.index = allData.findIndex(item => item === row); // Store original index from allData
+
+                headers.forEach((header) => {
                     const td = document.createElement('td');
                     let cellValue = row[header] !== undefined ? row[header] : '';
 
@@ -167,7 +247,76 @@
                 tableBody.appendChild(tr);
             });
             rowCountSpan.textContent = `Showing ${dataToRender.length} of ${allData.length} therapists`;
+
+            // Add hover listeners using event delegation after rows are added
+            tableBody.removeEventListener('mouseover', handleRowHover);
+            tableBody.addEventListener('mouseover', handleRowHover);
+
+             // Clear preview when table re-renders
+             clearPreview();
         }
+
+        // --- New functions for preview --- 
+        function clearPreview() {
+            previewContentDiv.innerHTML = '<p>Hover over a row in the table to see details here.</p>';
+        }
+
+        function updatePreview(originalIndex) {
+             if (originalIndex < 0 || originalIndex >= allData.length) {
+                clearPreview();
+                return;
+             }
+             const therapist = allData[originalIndex];
+             previewContentDiv.innerHTML = ''; // Clear previous
+
+            headers.forEach(header => {
+                const value = therapist[header] !== undefined ? therapist[header] : 'N/A';
+                if (value && value !== 'N/A') { // Only show fields with values
+                    const detailDiv = document.createElement('div');
+                    const keyStrong = document.createElement('strong');
+                     // Format header: replace underscores, capitalize
+                    keyStrong.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + ':';
+                    detailDiv.appendChild(keyStrong);
+                    
+                    // Handle links in preview
+                    if (header === 'website' && value) {
+                        const link = document.createElement('a');
+                        link.href = value.startsWith('http') ? value : 'http://' + value;
+                        link.textContent = value;
+                        link.target = '_blank'; 
+                        detailDiv.appendChild(link);
+                    } else if (header === 'phone' && value) {
+                         const link = document.createElement('a');
+                         link.href = `tel:${value.replace(/\D/g,'')}`;
+                         link.textContent = value;
+                         detailDiv.appendChild(link);
+                    } else {
+                         detailDiv.appendChild(document.createTextNode(' ' + value));
+                    }
+                    previewContentDiv.appendChild(detailDiv);
+                }
+            });
+        }
+
+        function handleRowHover(event) {
+            const targetRow = event.target.closest('tr');
+            if (!targetRow || !tableBody.contains(targetRow)) return; // Ensure it's a row within our tbody
+
+            // Remove highlight from previously hovered row
+             const highlighted = tableBody.querySelector('.highlighted-row');
+             if (highlighted) {
+                 highlighted.classList.remove('highlighted-row');
+             }
+
+             // Add highlight to current row
+             targetRow.classList.add('highlighted-row');
+
+            const originalIndex = parseInt(targetRow.dataset.index, 10);
+            if (!isNaN(originalIndex)) {
+                updatePreview(originalIndex);
+            }
+        }
+        // --- End new functions --- 
 
         function filterData() {
             const searchTerm = searchInput.value.toLowerCase();
@@ -236,11 +385,14 @@
                 // Initial render
                 renderTable(allData);
 
+                // Create a debounced version of filterData
+                const debouncedFilterData = debounce(filterData, 300); // 300ms delay
+
                 // Add event listeners for controls (only once after data load)
-                searchInput.removeEventListener('input', filterData); // Remove previous if any
-                searchInput.addEventListener('input', filterData);
-                newClientsFilter.removeEventListener('change', filterData); // Remove previous if any
-                newClientsFilter.addEventListener('change', filterData);
+                searchInput.removeEventListener('input', debouncedFilterData); // Use debounced version
+                searchInput.addEventListener('input', debouncedFilterData); // Use debounced version
+                newClientsFilter.removeEventListener('change', filterData); // Filter doesn't need debounce
+                newClientsFilter.addEventListener('change', filterData); // Filter doesn't need debounce
 
             } catch (error) {
                 console.error('Error loading or processing data:', error);
