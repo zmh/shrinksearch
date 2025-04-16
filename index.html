@@ -833,10 +833,16 @@
                     displayValue = displayValue.replace(/^\s*expertise\s*/i, '').trim(); 
                     break;
                 case 'client_focus_age': 
-                displayValue = displayValue.replace(/^\s*age\s*/i, '').trim(); 
-                break;
+                    displayValue = displayValue.replace(/^\s*age\s*/i, '').trim(); 
+                    break;
+                case 'client_focus_communities': 
+                    displayValue = displayValue.replace(/^\s*communities\s*/i, '').trim(); 
+                    break;
+                case 'client_focus_languages': 
+                    displayValue = displayValue.replace(/^\s*languages\s*/i, '').trim(); 
+                    break;
                 case 'client_focus_participants': 
-                    displayValue = displayValue.replace(/\s+participants$/i, '').trim();
+                    displayValue = displayValue.replace(/^\s*participants\s*/i, '').trim(); 
                     break;
                 case 'locations_and_primary_location': // Check JSON key
                      displayValue = displayValue.replace(/^\s*locations and primary location\s*/i, '').trim();
