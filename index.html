@@ -502,6 +502,12 @@
                 // Enrich data with original index for stable sorting/linking
                 allData = allData.map((item, index) => ({ ...item, originalIndex: index }));
 
+                // --- Log all keys from the first record ---
+                if (allData.length > 0) {
+                    console.log('All JSON Keys:', Object.keys(allData[0]));
+                }
+                // --- End logging ---
+
                 // Determine headers from the first item, excluding specific internal/undesired columns
                 if (allData.length > 0) {
                     const columnsToHide = new Set([
@@ -774,7 +780,7 @@
                         break;
                     case 'insurance accepted': // Lowercase
                          // Using more specific regex targeting start + trailing whitespace
-                         displayValue = displayValue.replace(/^\s*insurance accepted\s*/i, '').trim(); 
+                         displayValue = displayValue.replace(/^\s*insurance\s*/i, '').trim(); 
                          break;
                     case 'education years in practice': // Lowercase
                         displayValue = displayValue.replace(/^\s*education and years in practice\s*/i, '').trim();
