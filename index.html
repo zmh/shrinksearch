@@ -182,6 +182,7 @@
             overflow-y: auto; /* Only vertical scroll */
             background-color: var(--bg-color-dark);
             font-size: 11px; /* Even smaller for density */
+            position: relative; /* <<< Add for absolute positioning context */
         }
         #previewPane h3 {
             color: var(--header-color);
@@ -249,11 +250,13 @@
         .favorite-star.is-favorite {
             color: var(--star-color);
         }
+
+        /* Restore Preview Star CSS */ 
         #previewPane .favorite-star {
             position: absolute;
             top: 10px;
             right: 10px;
-            font-size: 20px; /* Larger star in preview */
+            font-size: 20px; 
         }
 
         /* Theme Picker Styles */
@@ -360,7 +363,7 @@
 
         <!-- New preview pane -->
         <div id="previewPane">
-            <span class="favorite-star" id="previewStar" title="Toggle Favorite">☆</span> <!-- Star in Preview -->
+            <span class="favorite-star" id="previewStar" title="Toggle Favorite">☆</span> <!-- Restore Preview Star -->
             <div id="previewContent">
                 <!-- Content is dynamically generated -->
             </div>
@@ -441,10 +444,10 @@
             updateFavoritesButton();
             // Refresh table to update star state potentially
             displayData(); 
-             // Update preview if the toggled item is currently shown
+            // Restore preview star update logic
             const currentPreviewIndex = parseInt(previewContentDiv.dataset.originalIndex, 10);
             if (!isNaN(currentPreviewIndex) && currentPreviewIndex === originalIndex) {
-                 updatePreviewStar(originalIndex);
+                updatePreviewStar(originalIndex);
             }
         }
 
@@ -728,8 +731,14 @@
                 }
             });
             // --- End Fields --- 
+
+            // Store original index on the preview pane itself for reference if needed
+            previewContentDiv.dataset.originalIndex = originalIndex; 
+
+            updatePreviewStar(originalIndex); // Restore call to update star state
         }
 
+        // Restore Function 
         function updatePreviewStar(originalIndex) {
              const star = document.getElementById('previewStar');
              if (!star) return;
@@ -785,12 +794,6 @@
                  updateFavoritesButton(); // Update button style/text
                  displayData(); // Re-render table with new filter state
             });
-
-            // Listener for preview star (might be redundant if set in updatePreview, but safe)
-            const previewStar = document.getElementById('previewStar');
-            if (previewStar) {
-                // We set onclick in updatePreviewStar to handle changing index
-            }
         }
 
         // Initial setup
