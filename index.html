@@ -119,7 +119,7 @@
     </div>
 
     <script>
-        const csvUrl = 'nyc_therapists.csv';
+        const jsonDataUrl = 'nyc_therapists.json';
         const tableBody = document.querySelector('#therapistTable tbody');
         const tableHead = document.querySelector('#therapistTable thead');
         const searchInput = document.getElementById('search');
@@ -130,38 +130,10 @@
 
         let allData = [];
         let headers = [];
-        let newClientsColIndex = -1;
-        let websiteColIndex = -1;
-        let phoneColIndex = -1;
-
-        // Basic CSV parser (handles simple cases, might need improvement for complex CSVs)
-        function parseCSV(text) {
-            const lines = text.split('\n');
-            headers = lines[0].split(',').map(h => h.trim());
-            const data = [];
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line) { // Skip blank lines
-                    // Basic split, doesn't handle commas inside quotes well
-                    const values = line.split(','); 
-                    // Trim values only if they are not potentially part of a quoted string
-                    // A more robust parser would handle quotes properly
-                    if (values.length === headers.length) { // Ensure row has expected number of columns
-                         const row = {};
-                        headers.forEach((header, index) => {
-                            row[header] = values[index] ? values[index].trim() : '';
-                        });
-                        data.push(row);
-                    } else {
-                        console.warn(`Skipping malformed row ${i + 1}: Expected ${headers.length} columns, found ${values.length}`);
-                    }
-                }
-            }
-            return data;
-        }
 
         function renderTable(dataToRender) {
             tableBody.innerHTML = ''; // Clear existing rows
+
             if (dataToRender.length === 0) {
                  tableBody.innerHTML = '<tr><td colspan="' + headers.length + '">No matching therapists found.</td></tr>';
                  rowCountSpan.textContent = 'Showing 0 therapists';
@@ -175,13 +147,13 @@
                     let cellValue = row[header] !== undefined ? row[header] : '';
 
                     // Make website and phone clickable
-                    if (index === websiteColIndex && cellValue) {
+                    if (header === 'website' && cellValue) {
                         const link = document.createElement('a');
                         link.href = cellValue.startsWith('http') ? cellValue : 'http://' + cellValue;
                         link.textContent = cellValue;
                         link.target = '_blank'; // Open in new tab
                         td.appendChild(link);
-                    } else if (index === phoneColIndex && cellValue) {
+                    } else if (header === 'phone' && cellValue) {
                          const link = document.createElement('a');
                          link.href = `tel:${cellValue.replace(/\D/g,'')}`; // Create tel link, remove non-digits
                          link.textContent = cellValue;
@@ -204,8 +176,8 @@
             const filteredData = allData.filter(row => {
                 // Filter by 'new_clients' status
                 let newClientMatch = true;
-                if (newClientFilterValue !== 'all' && newClientsColIndex !== -1) {
-                    const clientStatus = row[headers[newClientsColIndex]] || '';
+                if (newClientFilterValue !== 'all' && row.hasOwnProperty('new_clients')) {
+                    const clientStatus = row['new_clients'] || '';
                     // Basic matching - might need refinement based on actual data variations
                     if (newClientFilterValue === 'Yes') {
                         newClientMatch = clientStatus.toLowerCase().includes('yes') || clientStatus.toLowerCase().includes('accepting'); // Allow variations
@@ -233,28 +205,24 @@
         }
 
         async function loadAndDisplayData() {
-            try {
+             try {
                 statusDiv.textContent = '';
                 loadingDiv.style.display = 'block';
                 tableBody.innerHTML = '';
                 tableHead.innerHTML = '';
 
-                const response = await fetch(csvUrl);
+                const response = await fetch(jsonDataUrl);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const csvText = await response.text();
+                allData = await response.json();
 
-                allData = parseCSV(csvText);
-
-                if (!headers.length || !allData.length) {
-                     throw new Error('Failed to parse CSV or CSV is empty.');
+                if (!Array.isArray(allData) || allData.length === 0) {
+                    throw new Error('Failed to parse JSON, JSON is empty, or not an array.');
                 }
 
-                // Find column indices for specific fields
-                newClientsColIndex = headers.indexOf('new_clients');
-                websiteColIndex = headers.indexOf('website');
-                phoneColIndex = headers.indexOf('phone');
+                // Determine headers from the keys of the first object
+                headers = Object.keys(allData[0]);
 
                 // Populate table headers
                 const tr = document.createElement('tr');
@@ -268,21 +236,22 @@
                 // Initial render
                 renderTable(allData);
 
-                // Add event listeners for controls
+                // Add event listeners for controls (only once after data load)
+                searchInput.removeEventListener('input', filterData); // Remove previous if any
                 searchInput.addEventListener('input', filterData);
+                newClientsFilter.removeEventListener('change', filterData); // Remove previous if any
                 newClientsFilter.addEventListener('change', filterData);
 
             } catch (error) {
                 console.error('Error loading or processing data:', error);
-                statusDiv.textContent = `Error: ${error.message}. Please ensure '${csvUrl}' is in the same directory and correctly formatted.`;
+                statusDiv.textContent = `Error: ${error.message}. Please ensure '${jsonDataUrl}' is in the same directory, accessible by the server, and is valid JSON.`;
             } finally {
                 loadingDiv.style.display = 'none';
             }
         }
 
-        // Load data on page load
+        // Initial load triggered automatically
         loadAndDisplayData();
-
     </script>
 
 </body>
