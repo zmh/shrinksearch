@@ -186,16 +186,14 @@
         #previewPane .preview-short-desc {
             font-size: 10px;
             color: var(--text-color-tertiary);
-            margin-bottom: 8px; /* Reduced margin */
-            padding-bottom: 8px; /* Reduced padding */
-            padding-top: 4px; /* Reduced padding */
-            border-bottom: 1px dotted var(--border-color-light);
+            margin-bottom: 8px; /* Spacing below text */
+            padding-bottom: 8px; /* Spacing below text before rule */
+            padding-top: 4px; /* Spacing above text */
+            border-bottom: 1px dotted var(--border-color-light); /* Add rule back here */
             white-space: normal; /* Allow wrapping */
         }
         #previewPane div.field-block {
-            margin-bottom: 12px; /* Increased space between field blocks */
-            border-bottom: 1px dotted var(--border-color-light); /* Separator */
-            padding-bottom: 8px;
+            margin-bottom: 6px; /* Reduced space between field blocks */
         }
         #previewPane strong.field-key {
             color: var(--label-color);
@@ -208,6 +206,7 @@
             font-size: 10px;
             color: var(--text-color);
             word-wrap: break-word; /* Wrap long values */
+            margin-bottom: 2px; /* Small space below value before next key */
         }
         #previewPane .field-value a {
            color: var(--link-color);
