@@ -735,42 +735,44 @@
                 // --- Clean up specific fields before displaying ---
                 switch (keyLower) { // Switch on the lowercased key
                     case 'fees': // Lowercase
-                        displayValue = displayValue.replace(/^fees(:)?\s*/i, '').trim(); // Handle 'Fees' or 'Fees:'
+                        displayValue = displayValue.replace(/fees/gi, '').trim();
                         break;
                     case 'payment methods': // Lowercase
-                        displayValue = displayValue.replace(/^payment methods(:)?\s*/i, '').trim(); // Handle 'Payment Methods' or 'Payment Methods:'
+                        displayValue = displayValue.replace(/payment methods/gi, '').trim();
                         break;
                     case 'insurance accepted': // Lowercase
-                         displayValue = displayValue.replace(/^insurance(:)?\s*/i, '').trim(); // Handle 'Insurance' or 'Insurance:'
+                         displayValue = displayValue.replace(/insurance/gi, '').trim();
                          break;
                     case 'education years in practice': // Lowercase
-                        displayValue = displayValue.replace(/^education and years in practice(:)?\s*/i, '').trim();
+                        displayValue = displayValue.replace(/education and years in practice/gi, '').trim();
                         break;
                     case 'additional credentials': // Lowercase
-                        displayValue = displayValue.replace(/^additional credentials(:)?\s*/i, '').trim();
+                        displayValue = displayValue.replace(/additional credentials/gi, '').trim();
                         break;
                     case 'top specialties': // Lowercase
-                        displayValue = displayValue.replace(/^top specialties(:)?\s*/i, '').trim();
+                        displayValue = displayValue.replace(/top specialties/gi, '').trim();
                         break;
                     case 'expertise': // Lowercase
-                        // Remove 'Expertise' potentially followed by newline or space
-                        displayValue = displayValue.replace(/^expertise[:\s\n]*/i, '').trim(); 
+                        displayValue = displayValue.replace(/expertise/gi, '').trim(); 
                         break;
                     case 'client focus age': // Lowercase
-                        // Remove 'Age ' from start, allowing for leading space
-                        displayValue = displayValue.replace(/^\s*age\s+/i, '').trim();
+                        // Keep suffix removal: Remove ' age' from end
+                        displayValue = displayValue.replace(/\s+age$/i, '').trim();
                         break;
                     case 'client focus participants': // Lowercase
-                         // Remove 'Participants ' from start, allowing for leading space
-                        displayValue = displayValue.replace(/^\s*participants\s+/i, '').trim();
+                         // Keep suffix removal: Remove ' participants' from end
+                        displayValue = displayValue.replace(/\s+participants$/i, '').trim();
                         break;
                     case 'locations and primary location': // Lowercase
-                        displayValue = displayValue.replace(/^primary location(:)?\s*/i, '').trim();
+                         // Remove 'primary location' globally
+                        displayValue = displayValue.replace(/primary location/gi, '').trim();
                         break;
                     case 'additional location': // Lowercase
-                        displayValue = displayValue.replace(/^additional location:\s*/i, '').trim();
+                         // Remove 'additional location' globally
+                        displayValue = displayValue.replace(/additional location/gi, '').trim();
                         break;
                     case 'nearby areas': // Lowercase
+                         // Keep suffix removal: Remove ' cities' from end
                          displayValue = displayValue.replace(/\s+cities$/i, '').trim();
                          break;
                     // Add more cases here if needed
