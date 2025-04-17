@@ -95,6 +95,15 @@
         }
         /* --- END NEW CSS --- */
 
+        /* --- NEW: Header Flex Container --- */
+        .header-container {
+            display: flex;
+            justify-content: space-between; /* Title left, themes right */
+            align-items: center; /* Vertically align items */
+            margin-bottom: 10px; /* Space below header row */
+        }
+        /* --- END NEW CSS --- */
+
         /* Apply variables to scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -364,15 +373,18 @@
     </style>
 </head>
 <body>
+    <!-- NEW: Header Container -->
+    <div class="header-container">
+        <h1>NYC Therapist Finder</h1>
 
-    <h1>NYC Therapist Finder</h1>
-
-    <!-- Theme Picker -->
-    <div id="themePicker">
-        <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
-        <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
-        <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
+        <!-- Theme Picker -->
+        <div id="themePicker">
+            <span class="theme-square" data-set-theme="bloomberg" title="Bloomberg Theme" style="background-color: #000000;"></span>
+            <span class="theme-square" data-set-theme="solarized-dark" title="Solarized Dark" style="background-color: #002b36;"></span>
+            <span class="theme-square" data-set-theme="solarized-light" title="Solarized Light" style="background-color: #fdf6e3;"></span>
+        </div>
     </div>
+    <!-- END NEW: Header Container -->
 
     <div class="controls">
         <label for="searchInput">Search:</label>
@@ -584,6 +596,7 @@
             // Apply Search and 'New Clients' filters (if not showing only favorites)
             if (!showOnlyFavorites) {
                  const searchTerm = searchInput.value.toLowerCase();
+                 currentSearchTerm = searchTerm; // ADDED: Update global search term
                  const newClientsFilter = newClientsSelect.value;
 
                  if (searchTerm || newClientsFilter !== 'any') {
