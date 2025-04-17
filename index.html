@@ -353,6 +353,14 @@
         h1, h2, h3 {
             color: var(--header-color);
         }
+
+        /* --- NEW: Reduce H1 size --- */
+        h1 {
+            font-size: 18px; /* Smaller font size */
+            margin-bottom: 8px; /* Reduced bottom margin */
+        }
+        /* --- END NEW CSS --- */
+
     </style>
 </head>
 <body>
@@ -816,33 +824,30 @@
 
         // Restore Function 
         function updatePreviewStar(originalIndex) {
-            // Find the star within the preview pane using its class
-            const star = previewContentDiv.querySelector('.preview-star'); 
+            const star = previewContentDiv.querySelector('.preview-star'); // Select the star in the preview pane
             if (!star) {
-                console.error("Could not find preview star element to update.");
+                // console.warn(`updatePreviewStar: Preview star not found. Preview might not be showing item ${originalIndex}`);
+                return; // Star element might not be present if preview isn't the right item
+            }
+            const isFav = isFavorite(originalIndex);
+            star.innerHTML = isFav ? '★' : '☆';
+            star.classList.toggle('is-favorite', isFav);
+        }
+
+        function updateTableRowStar(originalIndex) {
+            const row = tableBody.querySelector(`tr[data-original-index='${originalIndex}']`);
+            if (!row) {
+                // console.warn(`updateTableRowStar: Row not found for index ${originalIndex}`);
+                return; // Row might not be visible due to filtering
+            }
+            const star = row.querySelector('.favorite-star');
+            if (!star) {
+                console.error(`updateTableRowStar: Star element not found in row for index ${originalIndex}`);
                 return;
             }
             const isFav = isFavorite(originalIndex);
             star.innerHTML = isFav ? '★' : '☆';
             star.classList.toggle('is-favorite', isFav);
-            // Remove redundant onclick handler - it's set when the star is created in updatePreview
-            /* star.onclick = (e) => { 
-                e.stopPropagation(); // Prevent triggering row hover/click
-                toggleFavorite(originalIndex);
-            }; */
-        }
-
-        function updateTableRowStar(originalIndex) {
-            // Corrected selector to use data-original-index
-            const row = tableBody.querySelector(`tr[data-original-index="${originalIndex}"]`);
-            if (row) {
-                // Corrected selector to use .star
-                const starSpan = row.querySelector('.star'); 
-                if (starSpan) {
-                    starSpan.innerHTML = isFavorite(originalIndex) ? '★' : '☆';
-                    starSpan.classList.toggle('is-favorite', isFavorite(originalIndex));
-                }
-            }
         }
 
         // --- NEW HELPER FUNCTION for cleaning values ---
