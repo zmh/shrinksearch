@@ -598,24 +598,26 @@
                  currentSearchTerm = searchTerm; // ADDED: Update global search term
                  const newClientsFilter = newClientsSelect.value;
 
+                 // --- MODIFIED: Split search term into words ---
+                 const searchTerms = searchTerm.split(/\s+/).filter(Boolean); // Split by whitespace, remove empty strings
+
                  if (searchTerm || newClientsFilter !== 'any') {
-                     dataToDisplay = dataToDisplay.filter(item => {
-                         let newClientMatch = true;
-                         if (newClientsFilter === 'yes') {
-                             newClientMatch = item.new_clients === true || String(item.new_clients).toLowerCase() === 'yes';
-                         } else if (newClientsFilter === 'no') {
-                             newClientMatch = item.new_clients === false || String(item.new_clients).toLowerCase() === 'no' || !item.new_clients;
-                         }
-
-                         if (!newClientMatch) return false;
-
-                         if (searchTerm) {
-                              return Object.values(item).some(value => 
-                                   value !== null && value !== undefined && String(value).toLowerCase().includes(searchTerm)
-                              );
-                         }
-                         return true; // Only New Client filter applied
-                    });
+                     dataToDisplay = dataToDisplay.filter(item => {                        
+                         // --- MODIFIED: Match ALL search terms --- 
+                         const matchesSearch = !searchTerms.length || searchTerms.every(term => 
+                             Object.values(item).some(value => 
+                                 String(value).toLowerCase().includes(term)
+                             )
+                         ); 
+                         // --- END MODIFIED SEARCH ---
+                         const matchesNewClients = newClientsFilter === 'any' ||
+                                                 (newClientsFilter === 'yes' && item.new_clients === true) ||
+                                                 (newClientsFilter === 'no' && item.new_clients === false);
+                        
+                         return matchesSearch && matchesNewClients; 
+                     });
+                 } else {
+                     dataToDisplay = [...allData]; // No filters applied
                  }
             }
             
@@ -701,17 +703,95 @@
         }
 
         // Function to highlight search term in text
-        function highlightText(text, searchTerm) {
-            if (!searchTerm || !text) {
-                return text; // Return original text if no search term or text
-            }
-            // Escape special regex characters in the search term
-            const escapedSearchTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(escapedSearchTerm, 'gi'); // Case-insensitive, global
-            // Ensure text is treated as a string
-            const textString = String(text);
-            return textString.replace(regex, match => `<span class="search-highlight">${match}</span>`);
+        function escapeRegExp(string) {
+            // $& means the whole matched string
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
         }
+
+        function highlightText(text, searchTerm) {
+            if (!searchTerm || !text) return text;
+            const terms = searchTerm.split(/\s+/).filter(Boolean);
+            if (terms.length === 0) return text;
+
+            // Create a regex to match any of the terms (case-insensitive)
+            const escapedTerms = terms.map(escapeRegExp);
+            const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+        
+            return String(text).replace(regex, match => `<span class="search-highlight">${match}</span>`);
+         }
+         // --- END Highlight ---
+ 
+        // --- NEW HELPER FUNCTION for cleaning values ---
+        function cleanDisplayValue(key, value) {
+            if (!value) return ''; // Return empty if no value
+
+            let displayValue = String(value); // Ensure it's a string
+            const keyLower = key.toLowerCase(); 
+
+            // --- Clean up specific fields before displaying ---
+            switch (keyLower) { // Switch on the lowercased key
+                case 'fees': 
+                    displayValue = displayValue.replace(/^\s*fees\s*/i, '').trim();
+                    break;
+                case 'payment_methods': 
+                    displayValue = displayValue.replace(/^\s*payment methods\s*/i, '').trim();
+                    break;
+                case 'insurance_accepted': 
+                     displayValue = displayValue.replace(/^\s*insurance\s*/i, '').trim(); 
+                     break;
+                case 'education_years_in_practice': 
+                    displayValue = displayValue.replace(/^\s*education and years in practice\s*/i, '').trim();
+                    break;
+                case 'additional_credentials': 
+                    displayValue = displayValue.replace(/^\s*additional credentials\s*/i, '').trim();
+                    break;
+                case 'top_specialties': 
+                    displayValue = displayValue.replace(/^\s*top specialties\s*/i, '').trim();
+                    break;
+                case 'expertise': 
+                    displayValue = displayValue.replace(/^\s*expertise\s*/i, '').trim(); 
+                    break;
+                case 'client_focus_age': 
+                    displayValue = displayValue.replace(/^\s*age\s*/i, '').trim(); 
+                    break;
+                case 'client_focus_communities': 
+                    displayValue = displayValue.replace(/^\s*communities\s*/i, '').trim(); 
+                    break;
+                case 'client_focus_participants': 
+                    displayValue = displayValue.replace(/^\s*participants\s*/i, '').trim(); 
+                    break;
+                case 'nearby_areas': 
+                    displayValue = displayValue.replace(/^\s*cities\s*/i, '').trim(); 
+                    break;
+                case 'primary_location': 
+                    displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
+                    displayValue = displayValue.replace(/^\s*email me\s*/i, '').trim();  
+                    displayValue = displayValue.replace(/^\s*my website\s*/i, '').trim();  
+                    break;
+                case 'additional_location': 
+                    displayValue = displayValue.replace(/^\s*additional location\s*/i, '').trim();
+                    displayValue = displayValue.replace(/^\s*email me\s*/i, '').trim();  
+                    displayValue = displayValue.replace(/^\s*my website\s*/i, '').trim();  
+                    break;
+                // Add more cases if needed
+                default:
+                    // No specific cleanup for this key
+                    break;
+            }
+            return displayValue;
+        }
+        // --- END NEW HELPER FUNCTION ---
+
+        // --- NEW HELPER: Check if a string is a valid URL --- 
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return string.startsWith('http://') || string.startsWith('https://');
+            } catch (_) {
+                return false;  
+            }
+        }
+        // --- END NEW HELPER ---
 
         function updatePreview(originalIndex) {
             if (originalIndex === null || originalIndex < 0 || originalIndex >= allData.length) {
@@ -861,78 +941,6 @@
             star.innerHTML = isFav ? '★' : '☆';
             star.classList.toggle('is-favorite', isFav);
         }
-
-        // --- NEW HELPER FUNCTION for cleaning values ---
-        function cleanDisplayValue(key, value) {
-            if (!value) return ''; // Return empty if no value
-
-            let displayValue = String(value); // Ensure it's a string
-            const keyLower = key.toLowerCase(); 
-
-            // --- Clean up specific fields before displaying ---
-            switch (keyLower) { // Switch on the lowercased key
-                case 'fees': 
-                    displayValue = displayValue.replace(/^\s*fees\s*/i, '').trim();
-                    break;
-                case 'payment_methods': 
-                    displayValue = displayValue.replace(/^\s*payment methods\s*/i, '').trim();
-                    break;
-                case 'insurance_accepted': 
-                     displayValue = displayValue.replace(/^\s*insurance\s*/i, '').trim(); 
-                     break;
-                case 'education_years_in_practice': 
-                    displayValue = displayValue.replace(/^\s*education and years in practice\s*/i, '').trim();
-                    break;
-                case 'additional_credentials': 
-                    displayValue = displayValue.replace(/^\s*additional credentials\s*/i, '').trim();
-                    break;
-                case 'top_specialties': 
-                    displayValue = displayValue.replace(/^\s*top specialties\s*/i, '').trim();
-                    break;
-                case 'expertise': 
-                    displayValue = displayValue.replace(/^\s*expertise\s*/i, '').trim(); 
-                    break;
-                case 'client_focus_age': 
-                    displayValue = displayValue.replace(/^\s*age\s*/i, '').trim(); 
-                    break;
-                case 'client_focus_communities': 
-                    displayValue = displayValue.replace(/^\s*communities\s*/i, '').trim(); 
-                    break;
-                case 'client_focus_participants': 
-                    displayValue = displayValue.replace(/^\s*participants\s*/i, '').trim(); 
-                    break;
-                case 'nearby_areas': 
-                    displayValue = displayValue.replace(/^\s*cities\s*/i, '').trim(); 
-                    break;
-                case 'primary_location': 
-                    displayValue = displayValue.replace(/^\s*primary location\s*/i, '').trim();
-                    displayValue = displayValue.replace(/^\s*email me\s*/i, '').trim();  
-                    displayValue = displayValue.replace(/^\s*my website\s*/i, '').trim();  
-                    break;
-                case 'additional_location': 
-                    displayValue = displayValue.replace(/^\s*additional location\s*/i, '').trim();
-                    displayValue = displayValue.replace(/^\s*email me\s*/i, '').trim();  
-                    displayValue = displayValue.replace(/^\s*my website\s*/i, '').trim();  
-                    break;
-                // Add more cases if needed
-                default:
-                    // No specific cleanup for this key
-                    break;
-            }
-            return displayValue;
-        }
-        // --- END NEW HELPER FUNCTION ---
-
-        // --- NEW HELPER: Check if a string is a valid URL --- 
-        function isValidUrl(string) {
-            try {
-                new URL(string);
-                return string.startsWith('http://') || string.startsWith('https://');
-            } catch (_) {
-                return false;  
-            }
-        }
-        // --- END NEW HELPER ---
 
         function handleRowHover(event) {
             const targetRow = event.target.closest('tr');
