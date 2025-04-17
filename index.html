@@ -598,15 +598,15 @@
                  currentSearchTerm = searchTerm; // ADDED: Update global search term
                  const newClientsFilter = newClientsSelect.value;
 
-                 // --- MODIFIED: Split search term into words ---
-                 const searchTerms = searchTerm.split(/\s+/).filter(Boolean); // Split by whitespace, remove empty strings
+                 // --- MODIFIED: Parse search query for words and phrases ---
+                 const searchCriteria = parseSearchQuery(searchTerm);
 
-                 if (searchTerm || newClientsFilter !== 'any') {
+                 if (searchCriteria.length > 0 || newClientsFilter !== 'any') {
                      dataToDisplay = dataToDisplay.filter(item => {                        
-                         // --- MODIFIED: Match ALL search terms --- 
-                         const matchesSearch = !searchTerms.length || searchTerms.every(term => 
+                         // --- MODIFIED: Match ALL search criteria (words/phrases) --- 
+                         const matchesSearch = searchCriteria.length === 0 || searchCriteria.every(criterion => 
                              Object.values(item).some(value => 
-                                 String(value).toLowerCase().includes(term)
+                                 value !== null && value !== undefined && String(value).toLowerCase().includes(criterion.value) // Check if word/phrase is included
                              )
                          ); 
                          // --- END MODIFIED SEARCH ---
@@ -710,12 +710,14 @@
 
         function highlightText(text, searchTerm) {
             if (!searchTerm || !text) return text;
-            const terms = searchTerm.split(/\s+/).filter(Boolean);
-            if (terms.length === 0) return text;
+            // --- MODIFIED: Use parsed criteria for highlighting ---
+            const criteria = parseSearchQuery(searchTerm);
+            if (criteria.length === 0) return text;
 
-            // Create a regex to match any of the terms (case-insensitive)
-            const escapedTerms = terms.map(escapeRegExp);
-            const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+            // Create a regex to match any of the terms/phrases (case-insensitive)
+            const escapedCriteriaValues = criteria.map(c => escapeRegExp(c.value)); 
+            const regex = new RegExp(`(${escapedCriteriaValues.join('|')})`, 'gi');
+            // --- END MODIFIED HIGHLIGHT ---
         
             return String(text).replace(regex, match => `<span class="search-highlight">${match}</span>`);
          }
@@ -1109,6 +1111,23 @@
             selectRow(targetRow);
         }
 
+        // --- NEW: Parse search query into words and phrases ---
+        function parseSearchQuery(query) {
+            const criteria = [];
+            // Regex: Match quoted phrases or non-whitespace sequences
+            const regex = /"([^"]+)"|\S+/g;
+            let match;
+
+            while ((match = regex.exec(query)) !== null) {
+                if (match[1]) { // Group 1 captured: it's a phrase (remove quotes internally)
+                    criteria.push({ type: 'phrase', value: match[1].toLowerCase() });
+                } else { // No group 1: it's a word
+                    criteria.push({ type: 'word', value: match[0].toLowerCase() });
+                } 
+            }
+            return criteria;
+        }
+        // --- END Parse ---
     </script>
 
 </body>
