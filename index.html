@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYC Therapist Finder</title>
+    <title>shrink.directory</title>
     <!-- Google Font Embed for IBM Plex Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -947,7 +947,7 @@
             if (!targetRow || !tableBody.contains(targetRow)) return; // Ensure it's a row within our tbody
 
             // Remove highlight from previously hovered row
-            const highlighted = tableBody.querySelector('.highlighted-row');
+            const highlighted = tableBody.querySelector('tr.highlighted-row');
             if (highlighted) {
                 highlighted.classList.remove('highlighted-row');
             }
@@ -1020,6 +1020,94 @@
         const savedTheme = localStorage.getItem('therapistFinderTheme') || 'bloomberg'; // Default to bloomberg
         applyTheme(savedTheme);
         // --- End Theme Switching Logic ---
+
+        // Add Keyboard Navigation Listener
+        document.addEventListener('keydown', handleKeyDown);
+
+        // --- Keyboard Navigation Handler --- 
+        function handleKeyDown(event) {
+            // Ignore if typing in the search input
+            if (document.activeElement === searchInput && (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key.toLowerCase() === 's')) {
+                return;
+            }
+
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            if (rows.length === 0) return; // No rows to navigate
+
+            const currentHighlightedRow = tableBody.querySelector('tr.highlighted-row');
+            let currentIndex = -1;
+            if (currentHighlightedRow) {
+                currentIndex = rows.indexOf(currentHighlightedRow);
+            }
+
+            let nextIndex = -1;
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault(); // Prevent page scrolling
+                if (currentIndex === -1 || currentIndex === rows.length - 1) {
+                    nextIndex = 0; // Wrap to top or start at top
+                } else {
+                    nextIndex = currentIndex + 1;
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault(); // Prevent page scrolling
+                if (currentIndex === -1 || currentIndex === 0) {
+                    nextIndex = rows.length - 1; // Wrap to bottom or start at bottom
+                } else {
+                    nextIndex = currentIndex - 1;
+                }
+            } else if (event.key.toLowerCase() === 's') {
+                if (currentHighlightedRow) {
+                    const originalIndex = parseInt(currentHighlightedRow.dataset.originalIndex, 10);
+                    if (!isNaN(originalIndex)) {
+                        toggleFavorite(originalIndex);
+                    }
+                }
+                return; // Don't change highlight on 's'
+            } else {
+                return; // Ignore other keys
+            }
+
+            if (nextIndex !== -1) {
+                selectRow(rows[nextIndex]);
+            }
+        }
+
+        // Helper function to select a row and update preview
+        function selectRow(rowElement) {
+            if (!rowElement) return;
+
+            // Remove highlight from currently selected row (if any)
+            const currentHighlightedRow = tableBody.querySelector('tr.highlighted-row');
+            if (currentHighlightedRow) {
+                currentHighlightedRow.classList.remove('highlighted-row');
+            }
+
+            // Add highlight to the new row
+            rowElement.classList.add('highlighted-row');
+            rowElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Update preview pane
+            const originalIndex = parseInt(rowElement.dataset.originalIndex, 10);
+            if (!isNaN(originalIndex)) {
+                updatePreview(originalIndex);
+            }
+        }
+
+        // Modify existing row click handler to use selectRow
+        function handleRowClick(event) {
+            const targetRow = event.target.closest('tr');
+            if (!targetRow || !tableBody.contains(targetRow)) return; 
+ 
+            // Check if the click was on the star itself
+            if (event.target.classList.contains('favorite-star')) {
+                // Favorite toggling is handled by the star's own click listener
+                return; 
+            }
+            
+            // Use the new helper function to handle selection and preview update
+            selectRow(targetRow);
+        }
 
     </script>
 
