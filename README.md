@@ -1,6 +1,8 @@
 # Shrinksearch
 
-A fast, keyboard-driven therapist directory for searching mental health providers in NYC. Includes 6,341 therapists, roughly the full result set for NYC from Psychology Today as of April 2025.
+![Preview](preview.png)
+
+A fast, keyboard-driven therapist directory for searching mental health providers in NYC, with better search and browsing experience than the Psychology Today website. Includes 6,341 therapists, roughly the full result set for NYC from Psychology Today as of April 2025.
 
 View at https://zmh.github.io/shrinksearch
 
